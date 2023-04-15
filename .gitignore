@@ -1,0 +1,6 @@
+*.exe
+obj/*
+*.stackdump
+*.o
+tags
+
