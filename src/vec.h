@@ -82,17 +82,17 @@ typedef enum
 #define VEC_IMPLEMENT(N, A, T, F, M)      VEC_IMPLEMENT_##M(N, A, T, F)
 
 /* implementaion by value and by reference */
-#define VEC_IMPLEMENT_COMMON(N, A, T, F)        \
-    VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F);           \
-    VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);            \
-    VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);            \
-    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F); \
-    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F) \
+#define VEC_IMPLEMENT_COMMON(N, A, T, F)    \
+    VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F);        \
+    VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);         \
+    VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);         \
+    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F);      \
+    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F);       \
 
 /* implementation by value */
-#define VEC_IMPLEMENT_BY_VAL(N, A, T, F);    \
+#define VEC_IMPLEMENT_BY_VAL(N, A, T, F);   \
     VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F);     \
-    VEC_IMPLEMENT_COMMON(N, A, T, F)                 \
+    VEC_IMPLEMENT_COMMON(N, A, T, F);                \
     VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F);           \
     VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F);       \
     VEC_IMPLEMENT_BY_VAL_RESERVE(N, A, T, F);        \
@@ -107,9 +107,9 @@ typedef enum
     VEC_IMPLEMENT_BY_VAL_GET_BACK(N, A, T, F);       \
 
 /* implementation by reference */
-#define VEC_IMPLEMENT_BY_REF(N, A, T, F);    \
+#define VEC_IMPLEMENT_BY_REF(N, A, T, F);   \
     VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F);     \
-    VEC_IMPLEMENT_COMMON(N, A, T, F);                   \
+    VEC_IMPLEMENT_COMMON(N, A, T, F);                \
     VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F);           \
     VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F);       \
     VEC_IMPLEMENT_BY_REF_RESERVE(N, A, T, F);        \
@@ -134,12 +134,14 @@ typedef enum
         assert(vec); \
         vec->len = 0; \
     }
+
 #define VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F) \
     inline size_t A##_length(N *vec) \
     { \
         assert(vec); \
         return vec->len; \
     }
+
 #define VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F) \
     int A##_resize(N *vec, size_t cap) \
     { \
@@ -150,6 +152,7 @@ typedef enum
         result |= result ?: A##_shrink(vec); \
         return result; \
     }
+
 #define VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F) \
     inline int A##_pop_front(N *vec, T *val) \
     { \
@@ -162,6 +165,7 @@ typedef enum
         vec_memcpy(val, item, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F) \
     inline int A##_pop_back(N *vec, T *val) \
     { \
@@ -174,6 +178,7 @@ typedef enum
         vec_memcpy(val, item, sizeof(T)); \
         return A##_shrink(vec); \
     }
+
 /* implementation by value */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F) \
     static inline T *A##_static_get(N *vec, size_t index) \
@@ -183,6 +188,7 @@ typedef enum
         assert(index >= vec->first); \
         return &vec->items[index]; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
@@ -192,6 +198,7 @@ typedef enum
         vec->cap = 0; \
         vec->len = 0; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F) \
     inline size_t A##_reserved(N *vec) \
     { \
@@ -200,6 +207,7 @@ typedef enum
         result += (sizeof(*vec->items) * vec->cap); \
         return result; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_RESERVE(N, A, T, F) \
     inline int A##_reserve(N *vec, size_t cap) \
     { \
@@ -216,6 +224,7 @@ typedef enum
         } \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_SHRINK(N, A, T, F) \
     int A##_shrink(N *vec) \
     { \
@@ -231,6 +240,7 @@ typedef enum
         vec->cap = required; \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_REALIGN(N, A, T, F) \
     void A##_realign(N *vec) \
     { \
@@ -239,6 +249,7 @@ typedef enum
         memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_SET_AT(N, A, T, F) \
     void A##_set_at(N *vec, T val, size_t index) \
     { \
@@ -246,6 +257,7 @@ typedef enum
         T *item = A##_static_get(vec, index); \
         memcpy(item, &val, sizeof(T)); \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_INSERT_AT(N, A, T, F) \
     int A##_insert_at(N *vec, T val, size_t index) \
     { \
@@ -257,6 +269,7 @@ typedef enum
         memcpy(item, &val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_PUSH_FRONT(N, A, T, F) \
     inline int A##_push_front(N *vec, T val) \
     { \
@@ -269,6 +282,7 @@ typedef enum
         vec_memcpy(item, &val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_PUSH_BACK(N, A, T, F) \
     inline int A##_push_back(N *vec, T val) \
     { \
@@ -280,6 +294,7 @@ typedef enum
         vec_memcpy(item, &val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_GET_AT(N, A, T, F) \
     inline T A##_get_at(N *vec, size_t index) \
     { \
@@ -288,12 +303,14 @@ typedef enum
         return *item; \
         /*return *A##_static_get(vec, index);*/ \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_GET_FRONT(N, A, T, F) \
     inline T A##_get_front(N *vec) \
     { \
         assert(vec); \
         return *A##_static_get(vec, vec->first); \
     }
+
 #define VEC_IMPLEMENT_BY_VAL_GET_BACK(N, A, T, F) \
     inline T A##_get_back(N *vec) \
     { \
@@ -310,6 +327,7 @@ typedef enum
         assert(index >= vec->first); \
         return vec->items[index]; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
@@ -321,6 +339,7 @@ typedef enum
         vec->cap = 0; \
         vec->len = 0; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F) \
     inline size_t A##_reserved(N *vec) \
     { \
@@ -330,6 +349,7 @@ typedef enum
         result += (sizeof(*vec->items) * vec->cap); \
         return result; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_RESERVE(N, A, T, F) \
     inline int A##_reserve(N *vec, size_t cap) \
     { \
@@ -350,6 +370,7 @@ typedef enum
         } \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_SHRINK(N, A, T, F) \
     int A##_shrink(N *vec) \
     { \
@@ -370,6 +391,7 @@ typedef enum
         vec->cap = required; \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_REALIGN(N, A, T, F) \
     void A##_realign(N *vec) \
     { \
@@ -378,6 +400,7 @@ typedef enum
         memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_SET_AT(N, A, T, F) \
     void A##_set_at(N *vec, T *val, size_t index) \
     { \
@@ -385,6 +408,7 @@ typedef enum
         T *item = A##_static_get(vec, index); \
         memcpy(item, val, sizeof(T)); \
     }
+
 #define VEC_IMPLEMENT_BY_REF_INSERT_AT(N, A, T, F) \
     int A##_insert_at(N *vec, T *val, size_t index) \
     { \
@@ -397,6 +421,7 @@ typedef enum
         memcpy(item, val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_PUSH_FRONT(N, A, T, F) \
     inline int A##_push_front(N *vec, T *val) \
     { \
@@ -409,6 +434,7 @@ typedef enum
         vec_memcpy(item, val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_PUSH_BACK(N, A, T, F) \
     inline int A##_push_back(N *vec, T *val) \
     { \
@@ -421,25 +447,27 @@ typedef enum
         vec_memcpy(item, val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
+
 #define VEC_IMPLEMENT_BY_REF_GET_AT(N, A, T, F) \
     inline T *A##_get_at(N *vec, size_t index) \
     { \
         assert(vec); \
         return A##_static_get(vec, index); \
     }
+
 #define VEC_IMPLEMENT_BY_REF_GET_FRONT(N, A, T, F) \
     inline T *A##_get_front(N *vec) \
     { \
         assert(vec); \
         return A##_static_get(vec, vec->first); \
     }
+
 #define VEC_IMPLEMENT_BY_REF_GET_BACK(N, A, T, F) \
     inline T *A##_get_back(N *vec) \
     { \
         assert(vec); \
         return A##_static_get(vec, vec->len - 1); \
     }
-
 
 
 //VEC_INCLUDE(VecU8, vec_u8, unsigned char, 0);
