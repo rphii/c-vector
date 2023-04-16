@@ -81,6 +81,8 @@ typedef enum
     void A##_recycle(N *vec); \
     size_t A##_length(N *vec); \
     int A##_resize(N *vec, size_t cap); \
+    int A##_pop_front(N *vec, T *val); \
+    int A##_pop_back(N *vec, T *val); \
     /* split implementation */ \
     void A##_free(N *vec); \
     size_t A##_reserved(N *vec); \
@@ -91,8 +93,6 @@ typedef enum
     int A##_insert_at(N *vec, VEC_ITEM(T, M) val, size_t index); \
     int A##_push_front(N *vec, VEC_ITEM(T, M) val); \
     int A##_push_back(N *vec, VEC_ITEM(T, M) val); \
-    int A##_pop_front(N *vec, T *val); \
-    int A##_pop_back(N *vec, T *val); \
     VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
     VEC_ITEM(T, M) A##_get_front(N *vec); \
     VEC_ITEM(T, M) A##_get_back(N *vec); \
