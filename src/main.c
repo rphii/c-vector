@@ -20,20 +20,29 @@ size_t test(size_t index)
     return val;
 }
 
+
 int main(void)
 {
-    printf("%zu\n", test(0));
-
-
     printf("evaluate vec\n");
     VecSize vec = {0};
     vec_size_free(&vec);
-    if(vec_size_reserve(&vec, 1ULL)) printf("failed reserving\n");
-    printf("reserved %zu bytes\n", vec_size_reserved(&vec));
-    vec_size_push_back(&vec, (void *)10);
     size_t val = 0;
-    vec_size_get_at(&vec, &val, 0);
-    printf("value is %zu\n", val);
+    if(vec_size_reserve(&vec, 100ULL)) printf("failed reserving\n");
+    printf("reserved %zu bytes\n", vec_size_reserved(&vec));
+    vec_size_shrink(&vec);
+    printf("reserved %zu bytes\n", vec_size_reserved(&vec));
+    for(size_t i = 0; i < 100; i++) {
+        vec_size_push_back(&vec, i);
+    }
+    for(size_t i = 0; i < 100; i++) {
+        val = vec_size_get_at(&vec, i);
+        printf("at vec[%zu] : %zu\n", i, val);
+    }
+    for(size_t i = 0; i < 100; i++) {
+        vec_size_pop_front(&vec, &val);
+        printf("pop vec[%zu] : %zu\n", i, val);
+    }
+    printf("reserved %zu bytes\n", vec_size_reserved(&vec));
 
 #if 0
     printf("evaluate vec2\n");
