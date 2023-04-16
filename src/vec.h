@@ -108,6 +108,7 @@ typedef enum
 
 /* implementation by reference */
 #define VEC_IMPLEMENT_BY_REF(N, A, T, F);   \
+    _Static_assert(F != 0); \
     VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F);     \
     VEC_IMPLEMENT_COMMON(N, A, T, F);                \
     VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F);           \
@@ -139,7 +140,7 @@ typedef enum
     inline size_t A##_length(N *vec) \
     { \
         assert(vec); \
-        return vec->len; \
+        return vec->len - vec->first; \
     }
 
 #define VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F) \
@@ -254,7 +255,7 @@ typedef enum
     void A##_set_at(N *vec, T val, size_t index) \
     { \
         assert(vec); \
-        T *item = A##_static_get(vec, index); \
+        T *item = A##_static_get(vec, index - vec->first); \
         memcpy(item, &val, sizeof(T)); \
     }
 
@@ -264,7 +265,7 @@ typedef enum
         assert(vec); \
         int result = A##_reserve(vec, index + 1); \
         if(result) return result; \
-        T *item = A##_static_get(vec, index); \
+        T *item = A##_static_get(vec, index - vec->first); \
         vec_memmove(item + 1, item, sizeof(T) * (++vec->len - index)); \
         memcpy(item, &val, sizeof(T)); \
         return VEC_ERROR_NONE; \
@@ -299,9 +300,7 @@ typedef enum
     inline T A##_get_at(N *vec, size_t index) \
     { \
         assert(vec); \
-        T *item = A##_static_get(vec, index); \
-        return *item; \
-        /*return *A##_static_get(vec, index);*/ \
+        return *A##_static_get(vec, index - vec->first); \
     }
 
 #define VEC_IMPLEMENT_BY_VAL_GET_FRONT(N, A, T, F) \
@@ -405,7 +404,7 @@ typedef enum
     void A##_set_at(N *vec, T *val, size_t index) \
     { \
         assert(vec); \
-        T *item = A##_static_get(vec, index); \
+        T *item = A##_static_get(vec, index - vec->first); \
         memcpy(item, val, sizeof(T)); \
     }
 
@@ -416,7 +415,7 @@ typedef enum
         assert(val); \
         int result = A##_reserve(vec, index + 1); \
         if(result) return result; \
-        T *item = A##_static_get(vec, index); \
+        T *item = A##_static_get(vec, index - vec->first); \
         vec_memmove(item + 1, item, sizeof(T *) * (++vec->len - index)); \
         memcpy(item, val, sizeof(T)); \
         return VEC_ERROR_NONE; \
@@ -452,7 +451,7 @@ typedef enum
     inline T *A##_get_at(N *vec, size_t index) \
     { \
         assert(vec); \
-        return A##_static_get(vec, index); \
+        return A##_static_get(vec, index - vec->first); \
     }
 
 #define VEC_IMPLEMENT_BY_REF_GET_FRONT(N, A, T, F) \

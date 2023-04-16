@@ -27,10 +27,11 @@ int main(void)
     VecSize vec = {0};
     vec_size_free(&vec);
     size_t val = 0;
-    if(vec_size_reserve(&vec, 100ULL)) printf("failed reserving\n");
+    if(vec_size_reserve(&vec, 1ULL)) printf("failed reserving\n");
     printf("reserved %zu bytes\n", vec_size_reserved(&vec));
     vec_size_shrink(&vec);
     printf("reserved %zu bytes\n", vec_size_reserved(&vec));
+#if 0
     for(size_t i = 0; i < 100; i++) {
         vec_size_push_back(&vec, i);
     }
@@ -43,14 +44,13 @@ int main(void)
         printf("pop vec[%zu] : %zu\n", i, val);
     }
     printf("reserved %zu bytes\n", vec_size_reserved(&vec));
+#endif
 
-#if 0
     printf("evaluate vec2\n");
     Vec2Size vec2 = {0};
     vec2_size_free(&vec2);
     if(vec2_size_reserve(&vec2, 1ULL)) printf("failed reserving\n");
-    printf("reserved %zu bytes\n", vec2_size_reserved(&vec2));
-#endif
+    printf("reserved %zu bytes / sizeof item %zu\n", vec2_size_reserved(&vec2), sizeof(VecSize));
 
 
     printf("done\n");
