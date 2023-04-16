@@ -1,9 +1,12 @@
 #ifndef VEC_H
 
+#define NDEBUG
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <stdio.h>
 
@@ -26,6 +29,7 @@
 #define ERR_VEC_RESERVE     "failed to reserve memory"
 
 
+
 #define VEC_INCLUDE(N, A, T, F) \
     typedef struct N { \
         union { \
@@ -40,16 +44,31 @@
     void A##_recycle(N *vec); \
     size_t A##_reserved(N *vec); \
     int A##_reserve(N *vec, size_t cap); \
+    int A##_fit(N *vec); \
+    int A##_resize(N *vec, size_t cap); \
     int A##_push_front(N *vec, T *val); \
     int A##_push_back(N *vec, T *val); \
     int A##_pop_front(N *vec, T *val); \
     int A##_pop_back(N *vec, T *val); \
+    int A##_set_at(N *vec, T *val, size_t index); \
+    int A##_insert_at(N *vec, T *val, size_t index); \
     int A##_get_at(N *vec, T *val, size_t index); \
     int A##_get_front(N *vec, T *val); \
     int A##_get_back(N *vec, T *val); \
 
 
 #define VEC_IMPLEMENT(N, A, T, F) \
+    /* private function implementations */ \
+    static inline T *A##_static_get(N *vec, size_t index) \
+    { \
+        assert(vec); \
+        assert(index < vec->len); \
+        if(VEC_CONTEXT_FOREACH(T, F)) { \
+            return vec->items_p[index]; \
+        } \
+        return &vec->items[index]; \
+    } \
+    /* public functions implementations */ \
     inline void A##_free(N *vec) \
     { \
         assert(vec && ERR_VEC_POINTER); \
@@ -90,7 +109,7 @@
             printf("required %zu\n", required); \
             if(VEC_CONTEXT_FOREACH(T, F)) { \
                 void *temp = realloc(vec->items_p, sizeof(*vec->items_p) * required); \
-                if(!temp) THROW("failed to allocate memory for table (%zu)", required); \
+                if(!temp) THROW("failed to allocate memory for vector (%zu)", required); \
                 vec->items_p = temp; \
                 memset(&vec->items_p[len], 0, sizeof(vec->items_p[vec->cap]) * (required - len)); \
                 for(size_t i = len; i < required; i++) { \
@@ -99,7 +118,7 @@
                 } \
             } else { \
                 void *temp = realloc(vec->items, sizeof(*vec->items) * required); \
-                if(!temp) THROW("failed to allocate memory for table (%zu)", required); \
+                if(!temp) THROW("failed to allocate memory for vector (%zu)", required); \
                 vec->items = temp; \
                 memset(&vec->items[len], 0, sizeof(vec->items[vec->cap]) * (required - len)); \
             } \
@@ -114,12 +133,26 @@
     { \
         assert(vec && ERR_VEC_POINTER); \
         if(A##_reserve(vec, vec->len + 1)) THROW(""); \
+        size_t len = vec->len++; \
+        T *item = A##_static_get(vec, len); \
         if(VEC_CONTEXT_FOREACH(T, F)) { \
             assert(v && ERR_VEC_VALUE); \
+            memcpy(item, v, sizeof(T)); \
+        } else { \
+            memcpy(item, &v, sizeof(T)); \
         } \
         return 0; \
     error: \
         return -1; \
+    } \
+    \
+    int A##_get_at(N *vec, T *val, size_t index) \
+    { \
+        assert(vec && ERR_VEC_POINTER); \
+        assert(val && ERR_VEC_VALUE); \
+        T *item = A##_static_get(vec, index); \
+        *val = *item; \
+        return 0; \
     } \
     \
 

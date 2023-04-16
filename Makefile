@@ -2,7 +2,7 @@
 
 VERSION := 1.00
 CC      := gcc -O
-CFLAGS  := -Wall -c -O3 #-pg -O3
+CFLAGS  := -Wall -c -O3 #-pg
 LDFLAGS := #-pg
 CSUFFIX	:= .c
 HSUFFIX	:= .h
