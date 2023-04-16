@@ -385,8 +385,8 @@ typedef enum
             vec->items = temp; \
             vec_memset(&vec->items[len], 0, sizeof(*vec->items) * (required - len)); \
             for(size_t i = len; i < required; i++) { \
-                vec->items[len] = vec_malloc(sizeof(**vec->items)); \
-                if(!vec->items[len]) return VEC_ERROR_MALLOC; \
+                vec->items[i] = vec_malloc(sizeof(**vec->items)); \
+                if(!vec->items[i]) return VEC_ERROR_MALLOC; \
             } \
             vec->cap = required; \
         } \
