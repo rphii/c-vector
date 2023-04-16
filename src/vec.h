@@ -269,7 +269,7 @@ typedef enum
     { \
         assert(vec); \
         T *item = A##_static_get(vec, 0); \
-        memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
+        vec_memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
     }
 
@@ -278,7 +278,7 @@ typedef enum
     { \
         assert(vec); \
         T *item = A##_static_get(vec, index + vec->first); \
-        memcpy(item, &val, sizeof(T)); \
+        vec_memcpy(item, &val, sizeof(T)); \
     }
 
 #define VEC_IMPLEMENT_BY_VAL_INSERT_AT(N, A, T, F) \
@@ -290,7 +290,7 @@ typedef enum
         vec->len++; \
         T *item = A##_static_get(vec, index + vec->first); \
         vec_memmove(item + 1, item, sizeof(T) * (++vec->len - index)); \
-        memcpy(item, &val, sizeof(T)); \
+        vec_memcpy(item, &val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
 
@@ -405,7 +405,7 @@ typedef enum
             for(size_t i = required; i < cap; i++) { \
                 free(vec->items[i]); \
             } \
-            memset(&vec->items[required], 0, sizeof(*vec->items) * (cap - required)); \
+            vec_memset(&vec->items[required], 0, sizeof(*vec->items) * (cap - required)); \
             void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
             if(!temp) return VEC_ERROR_REALLOC; \
             vec->items = temp; \
@@ -428,7 +428,7 @@ typedef enum
     { \
         assert(vec); \
         T *item = A##_static_get(vec, index + vec->first); \
-        memcpy(item, val, sizeof(T)); \
+        vec_memcpy(item, val, sizeof(T)); \
     }
 
 #define VEC_IMPLEMENT_BY_REF_INSERT_AT(N, A, T, F) \
@@ -441,7 +441,7 @@ typedef enum
         vec->len++; \
         T *item = A##_static_get(vec, index + vec->first); \
         vec_memmove(item + 1, item, sizeof(T *) * (++vec->len - index)); \
-        memcpy(item, val, sizeof(T)); \
+        vec_memcpy(item, val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
 
