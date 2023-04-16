@@ -130,7 +130,6 @@ typedef enum
 
 /* implementation by reference */
 #define VEC_IMPLEMENT_BY_REF(N, A, T, F);   \
-    _Static_assert(F != 0);                          \
     VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F);     \
     VEC_IMPLEMENT_COMMON(N, A, T, F);                \
     VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F);           \
@@ -155,6 +154,7 @@ typedef enum
     inline void A##_recycle(N *vec) \
     { \
         assert(vec); \
+        vec->first = 0; \
         vec->len = 0; \
     }
 
