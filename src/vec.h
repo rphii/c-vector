@@ -242,7 +242,7 @@ typedef enum
             void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
             if(!temp) return VEC_ERROR_REALLOC; \
             vec->items = temp; \
-            vec_memset(&vec->items[len], 0, sizeof(vec->items[vec->cap]) * (required - len)); \
+            vec_memset(&vec->items[len], 0, sizeof(*vec->items) * (required - len)); \
             vec->cap = required; \
         } \
         return VEC_ERROR_NONE; \
@@ -383,7 +383,7 @@ typedef enum
             void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
             if(!temp) return VEC_ERROR_REALLOC; \
             vec->items = temp; \
-            vec_memset(&vec->items[len], 0, sizeof(vec->items[vec->cap]) * (required - len)); \
+            vec_memset(&vec->items[len], 0, sizeof(*vec->items) * (required - len)); \
             for(size_t i = len; i < required; i++) { \
                 vec->items[len] = vec_malloc(sizeof(**vec->items)); \
                 if(!vec->items[len]) return VEC_ERROR_MALLOC; \
