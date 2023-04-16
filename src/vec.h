@@ -287,6 +287,7 @@ typedef enum
         assert(vec); \
         int result = A##_reserve(vec, index + 1); \
         if(result) return result; \
+        vec->len++; \
         T *item = A##_static_get(vec, index - vec->first); \
         vec_memmove(item + 1, item, sizeof(T) * (++vec->len - index)); \
         memcpy(item, &val, sizeof(T)); \
@@ -437,6 +438,7 @@ typedef enum
         assert(val); \
         int result = A##_reserve(vec, index + 1); \
         if(result) return result; \
+        vec->len++; \
         T *item = A##_static_get(vec, index - vec->first); \
         vec_memmove(item + 1, item, sizeof(T *) * (++vec->len - index)); \
         memcpy(item, val, sizeof(T)); \
