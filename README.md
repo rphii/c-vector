@@ -1,9 +1,10 @@
+# Things may still change
+# Very untested as of now
+
 # c-vector
 Simple Compile Time Generic Dynamic Vector in C.
 
-Things may still change.
-
-## First things first
+## First Things First
 On it's own, no code is being compiled. You first have to include and implement a vector of your desires. For that, there are two macros.
 ```c
 #include "vec.h"
