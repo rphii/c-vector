@@ -32,8 +32,8 @@ VEC_IMPLEMENT(VecSize, vec_size, size_t, BY_VAL, 0);
 
 ### Struct Vectors
 ```c
-VEC_INCLUDE(Vec2U8, vec2_u8, unsigned char, BY_REF);
-VEC_IMPLEMENT(Vec2U8, vec2_u8, unsigned char, BY_REF, vec_u8_free);
+VEC_INCLUDE(Vec2U8, vec2_u8, VecU8, BY_REF);
+VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 ```
 
 
