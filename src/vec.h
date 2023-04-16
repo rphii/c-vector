@@ -113,6 +113,7 @@ typedef enum
 
 /* implementation by value */
 #define VEC_IMPLEMENT_BY_VAL(N, A, T, F);   \
+    _Static_assert(F == 0); \
     VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F);     \
     VEC_IMPLEMENT_COMMON(N, A, T, F);                \
     VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F);           \
