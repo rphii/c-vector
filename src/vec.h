@@ -171,7 +171,7 @@ typedef enum
         assert(vec); \
         int result = VEC_ERROR_NONE; \
         result |= result ?: A##_reserve(vec, cap); \
-        A##_realign(vec); \
+        if(!result) A##_realign(vec); \
         result |= result ?: A##_shrink(vec); \
         return result; \
     }
