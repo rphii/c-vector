@@ -47,7 +47,7 @@ typedef enum
 #define VEC_ITEM_BY_REF(T)  T *
 #define VEC_ITEM(T, M)  VEC_ITEM_##M(T)
 
-#define VEC_INCLUDE(N, A, T, F, M) \
+#define VEC_INCLUDE(N, A, T, M) \
     typedef struct N { \
         VEC_ITEM(T, M)*items; \
         size_t len; \
@@ -79,7 +79,7 @@ typedef enum
 /* IMPLEMENTATION *****************************************/
 /**********************************************************/
 
-#define VEC_IMPLEMENT(N, A, T, F, M)      VEC_IMPLEMENT_##M(N, A, T, F)
+#define VEC_IMPLEMENT(N, A, T, M, F)      VEC_IMPLEMENT_##M(N, A, T, F)
 
 /* implementaion by value and by reference */
 #define VEC_IMPLEMENT_COMMON(N, A, T, F)    \
@@ -470,8 +470,8 @@ typedef enum
 
 
 //VEC_INCLUDE(VecU8, vec_u8, unsigned char, 0);
-VEC_INCLUDE(VecSize, vec_size, size_t, 0, BY_VAL);
-VEC_INCLUDE(Vec2Size, vec2_size, VecSize, vec_size_free, BY_REF);
+VEC_INCLUDE(VecSize, vec_size, size_t, BY_VAL);
+VEC_INCLUDE(Vec2Size, vec2_size, VecSize, BY_REF);
 
 #define VEC_H
 #endif
