@@ -1,27 +1,45 @@
 # c-vector
 Simple Compile Time Generic Dynamic Vector in C.
 
+Things may still change.
+
 ## First things first
 On it's own, no code is being compiled. You first have to include and implement a vector of your desires. For that, there are two macros.
 ```c
-VEC_INCLUDE(N, A, T, F, M);
-VEC_IMPLEMENT(N, A, T, F, M);
+#include "vec.h"
+VEC_INCLUDE(N, A, T, M);
+VEC_IMPLEMENT(N, A, T, M, F);
 ```
 1. `N` - **N**ame - the resulting name of the vector struct
 2. `A` - **A**bbreviation - functions get prefixed with that
 3. `T` - **T**ype - the type your elements within the vector
-4. `F` - **F**ree - provide a freeing function for your elements, if available
-5. `M` - **M**ode - storage type, either `BY_VAL` (by value) or `BY_REF` (by reference)
+4. `M` - **M**ode - storage type, either `BY_VAL` (by value) or `BY_REF` (by reference)
+5. `F` - **F**ree - provide a freeing function for your elements, if available
 
 ## Example
+
+### Basic Vectors
 ```c
-VEC_INCLUDE(VecU8, vec_u8, unsigned char, 0, BY_VAL);
-VEC_IMPLEMENT(VecU8, vec_u8, unsigned char, 0, BY_VAL);
+VEC_INCLUDE(VecU8, vec_u8, unsigned char, BY_VAL);
+VEC_IMPLEMENT(VecU8, vec_u8, unsigned char, BY_VAL, 0);
 ```
+
+```c
+VEC_INCLUDE(VecSize, vec_size, size_t, BY_VAL);
+VEC_IMPLEMENT(VecSize, vec_size, size_t, BY_VAL, 0);
+```
+
+### Struct Vectors
+```c
+VEC_INCLUDE(Vec2U8, vec2_u8, unsigned char, BY_REF);
+VEC_IMPLEMENT(Vec2U8, vec2_u8, unsigned char, BY_REF, vec_u8_free);
+```
+
 
 ## How to use it
 
-## Available Functions
+### Available Functions
+The `A##` means the `A` specified in the two macros.
 - `A##_recycle`
 - `A##_length`
 - `A##_resize`
