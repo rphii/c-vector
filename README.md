@@ -41,6 +41,7 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 
 ### Available Functions
 The `A##` means the `A` specified in the two macros.
+- `A##_zero`
 - `A##_recycle`
 - `A##_length`
 - `A##_resize`
