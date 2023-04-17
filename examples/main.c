@@ -3,22 +3,8 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#include "vec.h"
-
-size_t test_get(size_t *arr, size_t *val, size_t index)
-{
-    *val = arr[index];
-    return 0;
-}
-
-size_t test(size_t index)
-{
-    size_t *testarr = malloc(sizeof(size_t) * 10);
-    testarr[index] = 10;
-    size_t val = 0;
-    test_get(testarr, &val, 0);
-    return val;
-}
+#include "../src/vec.h"
+#include "person.h"
 
 
 int main(void)
