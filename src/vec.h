@@ -56,6 +56,7 @@ SOFTWARE. */
 
 //#define VEC_CONTEXT_FOREACH(T, F)     ((sizeof(T) > sizeof(void *)) || ((void *)F != (void *)NULL)) /* hoping the casting gets rid of -Waddress */
 #define VEC_DEFAULT_SIZE    4
+#define VEC_TYPE_FREE(F)    (void (*)(void *))(F)
 
 typedef enum
 {
@@ -78,6 +79,7 @@ typedef enum
     } N; \
     \
     /* common implementation */ \
+    void A##_zero(N *vec); \
     void A##_recycle(N *vec); \
     size_t A##_length(N *vec); \
     int A##_resize(N *vec, size_t cap); \
@@ -105,6 +107,8 @@ typedef enum
 
 /* implementaion by value and by reference */
 #define VEC_IMPLEMENT_COMMON(N, A, T, F)    \
+    VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);       \
+    VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);           \
     VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);         \
     VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);         \
@@ -150,6 +154,16 @@ typedef enum
 /**********************************************************/
 
 /* implementation for both */
+#define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
+    static void (*A##_static_f)(void *) = F != 0 ? VEC_TYPE_FREE(F) : 0; \
+
+#define VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F) \
+    inline void A##_zero(N *vec) \
+    { \
+        assert(vec); \
+        memset(vec, 0, sizeof(*vec)); \
+    }
+
 #define VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F) \
     inline void A##_recycle(N *vec) \
     { \
@@ -216,10 +230,13 @@ typedef enum
     inline void A##_free(N *vec) \
     { \
         assert(vec); \
+        if(F != 0) { \
+            for(size_t i = 0; i < vec->cap; i++) { \
+                A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+            } \
+        } \
         free(vec->items); \
-        vec->items = 0; \
-        vec->cap = 0; \
-        vec->len = 0; \
+        A##_zero(vec); \
     }
 
 #define VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F) \
@@ -252,10 +269,16 @@ typedef enum
     int A##_shrink(N *vec) \
     { \
         assert(vec); \
+        size_t cap = vec->cap; \
         size_t len = vec->len; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
         while(required > len) required /= 2; \
         if(required * 2 < vec->cap) { \
+            if(F != 0) { \
+                for(size_t i = required; i < cap; i++) { \
+                    A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+                } \
+            } \
             void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
             if(!temp) return VEC_ERROR_REALLOC; \
             vec->items = temp; \
@@ -355,11 +378,13 @@ typedef enum
     { \
         assert(vec); \
         for(size_t i = 0; i < vec->cap; i++) { \
+            if(F != 0) { \
+                A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
+            } \
             free(vec->items[i]); \
         } \
         free(vec->items); \
-        vec->cap = 0; \
-        vec->len = 0; \
+        A##_zero(vec); \
     }
 
 #define VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F) \
@@ -403,6 +428,9 @@ typedef enum
         while(required > len) required /= 2; \
         if(required * 2 < vec->cap) { \
             for(size_t i = required; i < cap; i++) { \
+                if(F != 0) { \
+                    A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
+                } \
                 free(vec->items[i]); \
             } \
             vec_memset(&vec->items[required], 0, sizeof(*vec->items) * (cap - required)); \
