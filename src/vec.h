@@ -292,8 +292,14 @@ typedef enum
     { \
         assert(vec); \
         T *item = A##_static_get(vec, 0); \
+        if(F != 0) { \
+            for(size_t i = 0; i < vec->first; i++) { \
+                A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+            } \
+        } \
         vec_memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
+        vec->first = 0; \
     }
 
 #define VEC_IMPLEMENT_BY_VAL_SET_AT(N, A, T, F) \
@@ -447,8 +453,14 @@ typedef enum
     { \
         assert(vec); \
         T *item = A##_static_get(vec, 0); \
+        if(F != 0) { \
+            for(size_t i = 0; i < vec->first; i++) { \
+                A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
+            } \
+        } \
         memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
+        vec->first = 0; \
     }
 
 #define VEC_IMPLEMENT_BY_REF_SET_AT(N, A, T, F) \
