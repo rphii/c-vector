@@ -194,12 +194,13 @@ typedef enum
     inline int A##_pop_front(N *vec, T *val) \
     { \
         assert(vec); \
-        assert(val); \
-        assert(vec->len > 0); \
-        size_t index = vec->first; \
-        T *item = A##_static_get(vec, index); \
+        assert(vec->len >= vec->first); \
+        if(val) { \
+            size_t index = vec->first; \
+            T *item = A##_static_get(vec, index); \
+            vec_memcpy(val, item, sizeof(T)); \
+        } \
         vec->first++; \
-        vec_memcpy(val, item, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
 
@@ -207,12 +208,13 @@ typedef enum
     inline int A##_pop_back(N *vec, T *val) \
     { \
         assert(vec); \
-        assert(val); \
-        assert(vec->len > 0); \
-        size_t index = vec->len - 1; \
-        T *item = A##_static_get(vec, index); \
+        assert(vec->len >= vec->first); \
+        if(val) { \
+            size_t index = vec->len - 1; \
+            T *item = A##_static_get(vec, index); \
+            vec_memcpy(val, item, sizeof(T)); \
+        } \
         vec->len--; \
-        vec_memcpy(val, item, sizeof(T)); \
         return A##_shrink(vec); \
     }
 
