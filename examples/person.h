@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "../src/vec.h"
 
@@ -29,8 +30,12 @@ typedef struct Person
 VEC_INCLUDE(VecPersonV, vec_person_v, Person, BY_VAL);
 VEC_INCLUDE(VecPersonR, vec_person_r, Person, BY_REF);
 
-void person_test_by_val(void);
-void person_test_by_ref(void);
+void person_test_by_val(time_t t);
+void person_test_by_ref(time_t t);
+
+void person_print(Person *person);
+int person_random(Person *person);
+void person_free(Person *person);
 
 #define PERSON_H
 #endif
