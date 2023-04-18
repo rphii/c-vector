@@ -184,8 +184,8 @@ typedef enum
     { \
         assert(vec); \
         int result = VEC_ERROR_NONE; \
+        A##_realign(vec); \
         result |= result ?: A##_reserve(vec, cap); \
-        if(!result) A##_realign(vec); \
         result |= result ?: A##_shrink(vec); \
         return result; \
     }
