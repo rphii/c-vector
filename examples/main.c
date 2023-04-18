@@ -5,6 +5,9 @@
 
 #include "../src/vec.h"
 
+VEC_INCLUDE(VecSize, vec_size, size_t, BY_VAL);
+VEC_INCLUDE(Vec2Size, vec2_size, VecSize, BY_REF);
+
 VEC_IMPLEMENT(VecSize, vec_size, size_t, BY_VAL, 0);
 VEC_IMPLEMENT(Vec2Size, vec2_size, VecSize, BY_REF, vec_size_free);
 
