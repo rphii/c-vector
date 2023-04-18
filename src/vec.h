@@ -194,7 +194,7 @@ typedef enum
     inline int A##_pop_front(N *vec, T *val) \
     { \
         assert(vec); \
-        assert(vec->len >= vec->first); \
+        assert(vec->len > vec->first); \
         if(val) { \
             size_t index = vec->first; \
             T *item = A##_static_get(vec, index); \
@@ -208,7 +208,7 @@ typedef enum
     inline int A##_pop_back(N *vec, T *val) \
     { \
         assert(vec); \
-        assert(vec->len >= vec->first); \
+        assert(vec->len > vec->first); \
         if(val) { \
             size_t index = vec->len - 1; \
             T *item = A##_static_get(vec, index); \
