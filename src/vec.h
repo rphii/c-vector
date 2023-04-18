@@ -534,10 +534,6 @@ typedef enum
         return A##_static_get(vec, vec->len - 1); \
     }
 
-
-//VEC_INCLUDE(VecU8, vec_u8, unsigned char, 0);
-VEC_INCLUDE(VecSize, vec_size, size_t, BY_VAL);
-VEC_INCLUDE(Vec2Size, vec2_size, VecSize, BY_REF);
-
 #define VEC_H
 #endif
+
