@@ -103,59 +103,41 @@ typedef enum
 /* IMPLEMENTATION *****************************************/
 /**********************************************************/
 
-#define VEC_IMPLEMENT(N, A, T, M, F)      VEC_IMPLEMENT_##M(N, A, T, F)
-
-/* implementaion by value and by reference */
-#define VEC_IMPLEMENT_COMMON(N, A, T, F)    \
-    VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);       \
-    VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);           \
-    VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F);        \
-    VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);         \
-    VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);         \
-    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F);      \
-    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F);       \
-
-/* implementation by value */
-#define VEC_IMPLEMENT_BY_VAL(N, A, T, F);   \
-    VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F);     \
-    VEC_IMPLEMENT_COMMON(N, A, T, F);                \
-    VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F);           \
-    VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F);       \
-    VEC_IMPLEMENT_BY_VAL_RESERVE(N, A, T, F);        \
-    VEC_IMPLEMENT_BY_VAL_SHRINK(N, A, T, F);         \
-    VEC_IMPLEMENT_BY_VAL_REALIGN(N, A, T, F);        \
-    VEC_IMPLEMENT_BY_VAL_SET_AT(N, A, T, F);         \
-    VEC_IMPLEMENT_BY_VAL_INSERT_AT(N, A, T, F);      \
-    VEC_IMPLEMENT_BY_VAL_PUSH_FRONT(N, A, T, F);     \
-    VEC_IMPLEMENT_BY_VAL_PUSH_BACK(N, A, T, F);      \
-    VEC_IMPLEMENT_BY_VAL_GET_AT(N, A, T, F);         \
-    VEC_IMPLEMENT_BY_VAL_GET_FRONT(N, A, T, F);      \
-    VEC_IMPLEMENT_BY_VAL_GET_BACK(N, A, T, F);       \
-
-/* implementation by reference */
-#define VEC_IMPLEMENT_BY_REF(N, A, T, F);   \
-    VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F);     \
-    VEC_IMPLEMENT_COMMON(N, A, T, F);                \
-    VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F);           \
-    VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F);       \
-    VEC_IMPLEMENT_BY_REF_RESERVE(N, A, T, F);        \
-    VEC_IMPLEMENT_BY_REF_SHRINK(N, A, T, F);         \
-    VEC_IMPLEMENT_BY_REF_REALIGN(N, A, T, F);        \
-    VEC_IMPLEMENT_BY_REF_SET_AT(N, A, T, F);         \
-    VEC_IMPLEMENT_BY_REF_INSERT_AT(N, A, T, F);      \
-    VEC_IMPLEMENT_BY_REF_PUSH_FRONT(N, A, T, F);     \
-    VEC_IMPLEMENT_BY_REF_PUSH_BACK(N, A, T, F);      \
-    VEC_IMPLEMENT_BY_REF_GET_AT(N, A, T, F);         \
-    VEC_IMPLEMENT_BY_REF_GET_FRONT(N, A, T, F);      \
-    VEC_IMPLEMENT_BY_REF_GET_BACK(N, A, T, F);       \
+#define VEC_IMPLEMENT(N, A, T, M, F) \
+    /* private */ \
+    VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_STATIC_GET(N, A, T, F);     \
+    /* public */ \
+    VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);          \
+    VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F);       \
+    VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
+    VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
+    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F);     \
+    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
+    VEC_IMPLEMENT_##M##_RESERVED(N, A, T, F);       \
+    VEC_IMPLEMENT_##M##_RESERVE(N, A, T, F);        \
+    VEC_IMPLEMENT_##M##_SHRINK(N, A, T, F);         \
+    VEC_IMPLEMENT_##M##_REALIGN(N, A, T, F);        \
+    VEC_IMPLEMENT_##M##_SET_AT(N, A, T, F);         \
+    VEC_IMPLEMENT_##M##_INSERT_AT(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_PUSH_FRONT(N, A, T, F);     \
+    VEC_IMPLEMENT_##M##_PUSH_BACK(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_GET_AT(N, A, T, F);         \
+    VEC_IMPLEMENT_##M##_GET_FRONT(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_GET_BACK(N, A, T, F);       \
 
 /**********************************************************/
-/* PUBLIC FUNCTION IMPLEMENTATIONS ************************/
+/* PRIVATE FUNCTION IMPLEMENTATIONS ***********************/
 /**********************************************************/
 
 /* implementation for both */
 #define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
     static void (*A##_static_f)(void *) = F != 0 ? VEC_TYPE_FREE(F) : 0; \
+
+/**********************************************************/
+/* PUBLIC FUNCTION IMPLEMENTATIONS ************************/
+/**********************************************************/
 
 #define VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F) \
     inline void A##_zero(N *vec) \
