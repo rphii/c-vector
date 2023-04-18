@@ -135,10 +135,31 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
     static void (*A##_static_f)(void *) = F != 0 ? VEC_TYPE_FREE(F) : 0; \
 
+/* implementation by val */
+#define VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F) \
+    static inline T *A##_static_get(N *vec, size_t index) \
+    { \
+        assert(vec); \
+        assert(index < vec->len); \
+        assert(index >= vec->first); \
+        return &vec->items[index]; \
+    }
+
+/* implementation by ref */
+#define VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F) \
+    static inline T *A##_static_get(N *vec, size_t index) \
+    { \
+        assert(vec); \
+        assert(index < vec->len); \
+        assert(index >= vec->first); \
+        return vec->items[index]; \
+    }
+
 /**********************************************************/
 /* PUBLIC FUNCTION IMPLEMENTATIONS ************************/
 /**********************************************************/
 
+/* implementation for both */
 #define VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F) \
     inline void A##_zero(N *vec) \
     { \
@@ -201,15 +222,6 @@ typedef enum
     }
 
 /* implementation by value */
-#define VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F) \
-    static inline T *A##_static_get(N *vec, size_t index) \
-    { \
-        assert(vec); \
-        assert(index < vec->len); \
-        assert(index >= vec->first); \
-        return &vec->items[index]; \
-    }
-
 #define VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
@@ -354,15 +366,6 @@ typedef enum
     }
 
 /* implementaiton by reference */
-#define VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F) \
-    static inline T *A##_static_get(N *vec, size_t index) \
-    { \
-        assert(vec); \
-        assert(index < vec->len); \
-        assert(index >= vec->first); \
-        return vec->items[index]; \
-    }
-
 #define VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
