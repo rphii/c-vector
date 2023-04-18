@@ -161,7 +161,7 @@ typedef enum
     inline void A##_zero(N *vec) \
     { \
         assert(vec); \
-        memset(vec, 0, sizeof(*vec)); \
+        vec_memset(vec, 0, sizeof(*vec)); \
     }
 
 #define VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F) \
@@ -460,7 +460,7 @@ typedef enum
                 A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
             } \
         } \
-        memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
+        vec_memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
         vec->first = 0; \
     }
