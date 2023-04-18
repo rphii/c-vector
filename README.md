@@ -60,3 +60,9 @@ The `A##` means the `A` specified in the two macros.
 - `A##_get_front`
 - `A##_get_back`
 
+# todo so I don't forget
+- add `pop_at`
+- add `remove_at`
+- bundle the snippets I copied around used for freeing into it's own function
+- maybe rename `realign` to `shrink_front` and `shrink` to `shrink_back` -> add `shrink` function
+
