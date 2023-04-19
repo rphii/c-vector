@@ -83,13 +83,13 @@ typedef enum
     void A##_recycle(N *vec); \
     size_t A##_length(N *vec); \
     int A##_resize(N *vec, size_t cap); \
+    int A##_shrink(N *vec); \
     int A##_pop_front(N *vec, T *val); \
     int A##_pop_back(N *vec, T *val); \
     /* split implementation */ \
     void A##_free(N *vec); \
     size_t A##_reserved(N *vec); \
     int A##_reserve(N *vec, size_t cap); \
-    int A##_shrink(N *vec); \
     void A##_set_at(N *vec, VEC_ITEM(T, M) val, size_t index); \
     int A##_insert_at(N *vec, VEC_ITEM(T, M) val, size_t index); \
     int A##_push_front(N *vec, VEC_ITEM(T, M) val); \
@@ -177,7 +177,7 @@ typedef enum
                 A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
             } \
         } \
-        vec_memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
+        vec_memmove(item, item + vec->first,, sizeof(T) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
         vec->first = 0; \
     }
@@ -226,7 +226,7 @@ typedef enum
                 A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
             } \
         } \
-        vec_memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
+        vec_memmove(item, item + vec->first,, sizeof(T *) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
         vec->first = 0; \
     }
