@@ -177,7 +177,7 @@ typedef enum
                 A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
             } \
         } \
-        vec_memmove(item, item + vec->first,, sizeof(T) * (vec->len - vec->first)); \
+        vec_memmove(item, item + vec->first, sizeof(T) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
         vec->first = 0; \
     }
@@ -226,7 +226,7 @@ typedef enum
                 A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
             } \
         } \
-        vec_memmove(item, item + vec->first,, sizeof(T *) * (vec->len - vec->first)); \
+        vec_memmove(item, item + vec->first, sizeof(T *) * (vec->len - vec->first)); \
         vec->len -= vec->first; \
         vec->first = 0; \
     }
