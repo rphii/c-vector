@@ -464,6 +464,7 @@ typedef enum
     void A##_set_at(N *vec, T *val, size_t index) \
     { \
         assert(vec); \
+        assert(val); \
         T *item = A##_static_get(vec, index + vec->first); \
         vec_memcpy(item, val, sizeof(T)); \
     }
@@ -486,6 +487,7 @@ typedef enum
     inline int A##_push_front(N *vec, T *val) \
     { \
         assert(vec); \
+        assert(val); \
         int result = A##_reserve(vec, vec->len + 1); \
         if(result) return result; \
         size_t len = vec->len++ - vec->first; \
