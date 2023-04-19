@@ -63,7 +63,6 @@ The `A##` means the `A` specified in the two macros.
 - `A##_reserved`
 - `A##_reserve`
 - `A##_shrink`
-- `A##_realign`
 - `A##_set_at`
 - `A##_insert_at`
 - `A##_push_front`
@@ -77,6 +76,6 @@ The `A##` means the `A` specified in the two macros.
 # todo so I don't forget
 - add `pop_at`
 - add `remove_at`
+- add `clear_at`
 - bundle the snippets I copied around used for freeing into it's own function
-- maybe rename `realign` to `shrink_front` and `shrink` to `shrink_back` -> add `shrink` function
 
