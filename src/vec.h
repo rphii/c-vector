@@ -90,7 +90,6 @@ typedef enum
     size_t A##_reserved(N *vec); \
     int A##_reserve(N *vec, size_t cap); \
     int A##_shrink(N *vec); \
-    void A##_realign(N *vec); \
     void A##_set_at(N *vec, VEC_ITEM(T, M) val, size_t index); \
     int A##_insert_at(N *vec, VEC_ITEM(T, M) val, size_t index); \
     int A##_push_front(N *vec, VEC_ITEM(T, M) val); \
@@ -105,20 +104,21 @@ typedef enum
 
 #define VEC_IMPLEMENT(N, A, T, M, F) \
     /* private */ \
-    VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);      \
-    VEC_IMPLEMENT_##M##_STATIC_GET(N, A, T, F);     \
+    VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);              \
+    VEC_IMPLEMENT_##M##_STATIC_GET(N, A, T, F);             \
+    VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
+    VEC_IMPLEMENT_##M##_STATIC_SHRINK_FRONT(N, A, T, F);    \
     /* public */ \
     VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);          \
     VEC_IMPLEMENT_COMMON_RECYCLE(N, A, T, F);       \
     VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
+    VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F);     \
     VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F);      \
     VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
     VEC_IMPLEMENT_##M##_RESERVED(N, A, T, F);       \
     VEC_IMPLEMENT_##M##_RESERVE(N, A, T, F);        \
-    VEC_IMPLEMENT_##M##_SHRINK(N, A, T, F);         \
-    VEC_IMPLEMENT_##M##_REALIGN(N, A, T, F);        \
     VEC_IMPLEMENT_##M##_SET_AT(N, A, T, F);         \
     VEC_IMPLEMENT_##M##_INSERT_AT(N, A, T, F);      \
     VEC_IMPLEMENT_##M##_PUSH_FRONT(N, A, T, F);     \
@@ -145,6 +145,43 @@ typedef enum
         return &vec->items[index]; \
     }
 
+#define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_BACK(N, A, T, F) \
+    static int A##_static_shrink_back(N *vec) \
+    { \
+        assert(vec); \
+        size_t cap = vec->cap; \
+        size_t len = vec->len; \
+        size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
+        while(required > len) required /= 2; \
+        if(required * 2 < vec->cap) { \
+            if(F != 0) { \
+                for(size_t i = required; i < cap; i++) { \
+                    A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+                } \
+            } \
+            void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
+            if(!temp) return VEC_ERROR_REALLOC; \
+            vec->items = temp; \
+        } \
+        vec->cap = required; \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_FRONT(N, A, T, F) \
+    static void A##_static_shrink_front(N *vec) \
+    { \
+        assert(vec); \
+        T *item = A##_static_get(vec, 0); \
+        if(F != 0) { \
+            for(size_t i = 0; i < vec->first; i++) { \
+                A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+            } \
+        } \
+        vec_memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
+        vec->len -= vec->first; \
+        vec->first = 0; \
+    }
+
 /* implementation by ref */
 #define VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F) \
     static inline T *A##_static_get(N *vec, size_t index) \
@@ -154,6 +191,46 @@ typedef enum
         assert(index >= vec->first); \
         return vec->items[index]; \
     }
+
+#define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_BACK(N, A, T, F) \
+    static inline int A##_static_shrink_back(N *vec) \
+    { \
+        assert(vec); \
+        size_t cap = vec->cap; \
+        size_t len = vec->len; \
+        size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
+        while(required > len) required /= 2; \
+        if(required * 2 < vec->cap) { \
+            for(size_t i = required; i < cap; i++) { \
+                if(F != 0) { \
+                    A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
+                } \
+                free(vec->items[i]); \
+            } \
+            vec_memset(&vec->items[required], 0, sizeof(*vec->items) * (cap - required)); \
+            void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
+            if(!temp) return VEC_ERROR_REALLOC; \
+            vec->items = temp; \
+        } \
+        vec->cap = required; \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_FRONT(N, A, T, F) \
+    static inline void A##_static_shrink_front(N *vec) \
+    { \
+        assert(vec); \
+        T *item = A##_static_get(vec, 0); \
+        if(F != 0) { \
+            for(size_t i = 0; i < vec->first; i++) { \
+                A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
+            } \
+        } \
+        vec_memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
+        vec->len -= vec->first; \
+        vec->first = 0; \
+    }
+
 
 /**********************************************************/
 /* PUBLIC FUNCTION IMPLEMENTATIONS ************************/
@@ -183,13 +260,22 @@ typedef enum
     }
 
 #define VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F) \
-    int A##_resize(N *vec, size_t cap) \
+    inline int A##_resize(N *vec, size_t cap) \
     { \
         assert(vec); \
         int result = VEC_ERROR_NONE; \
-        A##_realign(vec); \
+        A##_static_shrink_front(vec); \
         result |= result ?: A##_reserve(vec, cap); \
-        result |= result ?: A##_shrink(vec); \
+        result |= result ?: A##_static_shrink_back(vec); \
+        return result; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F) \
+    inline int A##_shrink(N *vec) \
+    { \
+        assert(vec); \
+        A##_static_shrink_front(vec); \
+        int result = A##_static_shrink_back(vec); \
         return result; \
     }
 
@@ -259,43 +345,6 @@ typedef enum
             vec->cap = required; \
         } \
         return VEC_ERROR_NONE; \
-    }
-
-#define VEC_IMPLEMENT_BY_VAL_SHRINK(N, A, T, F) \
-    int A##_shrink(N *vec) \
-    { \
-        assert(vec); \
-        size_t cap = vec->cap; \
-        size_t len = vec->len; \
-        size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
-        while(required > len) required /= 2; \
-        if(required * 2 < vec->cap) { \
-            if(F != 0) { \
-                for(size_t i = required; i < cap; i++) { \
-                    A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
-                } \
-            } \
-            void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
-            if(!temp) return VEC_ERROR_REALLOC; \
-            vec->items = temp; \
-        } \
-        vec->cap = required; \
-        return VEC_ERROR_NONE; \
-    }
-
-#define VEC_IMPLEMENT_BY_VAL_REALIGN(N, A, T, F) \
-    void A##_realign(N *vec) \
-    { \
-        assert(vec); \
-        T *item = A##_static_get(vec, 0); \
-        if(F != 0) { \
-            for(size_t i = 0; i < vec->first; i++) { \
-                A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
-            } \
-        } \
-        vec_memmove(item + vec->first, item, sizeof(T) * (vec->len - vec->first)); \
-        vec->len -= vec->first; \
-        vec->first = 0; \
     }
 
 #define VEC_IMPLEMENT_BY_VAL_SET_AT(N, A, T, F) \
@@ -409,45 +458,6 @@ typedef enum
             vec->cap = required; \
         } \
         return VEC_ERROR_NONE; \
-    }
-
-#define VEC_IMPLEMENT_BY_REF_SHRINK(N, A, T, F) \
-    int A##_shrink(N *vec) \
-    { \
-        assert(vec); \
-        size_t cap = vec->cap; \
-        size_t len = vec->len; \
-        size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
-        while(required > len) required /= 2; \
-        if(required * 2 < vec->cap) { \
-            for(size_t i = required; i < cap; i++) { \
-                if(F != 0) { \
-                    A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
-                } \
-                free(vec->items[i]); \
-            } \
-            vec_memset(&vec->items[required], 0, sizeof(*vec->items) * (cap - required)); \
-            void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
-            if(!temp) return VEC_ERROR_REALLOC; \
-            vec->items = temp; \
-        } \
-        vec->cap = required; \
-        return VEC_ERROR_NONE; \
-    }
-
-#define VEC_IMPLEMENT_BY_REF_REALIGN(N, A, T, F) \
-    void A##_realign(N *vec) \
-    { \
-        assert(vec); \
-        T *item = A##_static_get(vec, 0); \
-        if(F != 0) { \
-            for(size_t i = 0; i < vec->first; i++) { \
-                A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
-            } \
-        } \
-        vec_memmove(item + vec->first, item, sizeof(T *) * (vec->len - vec->first)); \
-        vec->len -= vec->first; \
-        vec->first = 0; \
     }
 
 #define VEC_IMPLEMENT_BY_REF_SET_AT(N, A, T, F) \
