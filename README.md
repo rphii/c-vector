@@ -44,7 +44,7 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 ## Metaprogramming
 ### Advantages
 - Compiler optimized code
-- Flexibility (generics / templates)
+- Flexibility, reusability (generics / templates)
 - Type safety
 ### Disadvantages
 - Maintenance challenges
