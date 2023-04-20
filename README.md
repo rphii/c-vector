@@ -55,8 +55,8 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 
 ### Available Functions
 The `A##` means the `A` specified in the two macros.
-- `A##_zero`
-- `A##_recycle`
+- `A##_zero` simply set to zero (unsafe)
+- `A##_clear`
 - `A##_length`
 - `A##_resize`
 - `A##_free`
@@ -75,7 +75,11 @@ The `A##` means the `A` specified in the two macros.
 
 # todo so I don't forget
 - add `pop_at`
-- add `remove_at`
-- add `clear_at`
+- add `erase_at`
+- add `capacity`
+- add `empty`
+- add `copy`
 - bundle the snippets I copied around used for freeing into it's own function
+- add `iter_begin`
+- add `iter_end`
 
