@@ -1,5 +1,8 @@
 .SUFFIXES:
 
+CC      := gcc
+CFLAGS  := -Wall -O3
+
 OBJ_DIR := obj
 BIN_DIR := bin
 
@@ -11,7 +14,7 @@ TARGETS := $(addprefix $(BIN_DIR)/,$(JOBS))
 
 .phony: all clean list bin obj $(JOBS)
 
-all: $(JOBS)
+all: $(BIN_DIR) $(JOBS)
 
 bin:
 	mkdir bin
@@ -21,8 +24,8 @@ obj:
 list:
 	@echo $(JOBS)
 
-$(JOBS): $(BIN_DIR)
-	gcc -Wall -O3 -o $(patsubst %,$(BIN_DIR)/%,$@) $(patsubst %,%$(CSUFFIX),$@)
+$(JOBS):
+	$(CC) $(CFLAGS) -o $(patsubst %,$(BIN_DIR)/%,$@) $(patsubst %,%$(CSUFFIX),$@)
 
 
 
