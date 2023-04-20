@@ -22,7 +22,7 @@ list:
 	@echo $(JOBS)
 
 $(JOBS): $(BIN_DIR)
-	gcc -Wall -O3 -DNDEBUG -o $(patsubst %,$(BIN_DIR)/%,$@) $(patsubst %,%$(CSUFFIX),$@)
+	gcc -Wall -O3 -o $(patsubst %,$(BIN_DIR)/%,$@) $(patsubst %,%$(CSUFFIX),$@)
 
 
 
