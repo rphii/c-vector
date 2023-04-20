@@ -58,6 +58,8 @@ The `A##` means the `A` specified in the two macros.
 - `A##_zero` set vector to zero without freeing
 - `A##_clear` clear vector but keep capacity
 - `A##_length` return length of of the vector in items
+- `A##_capacity` return capacity of the vector
+- `A##_empty` return if it's empty
 - `A##_resize` resize vector to optimal given length in items
 - `A##_free` free all memory used
 - `A##_reserved` return bytes allocated
@@ -77,10 +79,9 @@ The `A##` means the `A` specified in the two macros.
 
 # todo so I don't forget
 - add `pop_at` pop item at index
-- add `erase_at` clear and free item at
-- add `capacity` return capacity of the vector
-- add `is_empty` return if it's empty
-- add `copy` make a copy of one vector...?
+- ~~add `erase_at` clear and free item at index, shift rest in place~~
+- ~~add `clear_at` clear and free item at index~~
+- add `copy` make a copy of one vector...? => unlikely good when `BY_REF`...
 - add `emplace` insert item before index
 - bundle the snippets I copied around used for freeing into it's own function
 - consider removing `N.first` and anything relating to it... in order to reduce compile time...?

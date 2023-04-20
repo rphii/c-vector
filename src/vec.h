@@ -80,6 +80,8 @@ typedef enum
     /* common implementation */ \
     void A##_clear(N *vec); \
     size_t A##_length(N *vec); \
+    size_t A##_capacity(N *vec); \
+    int A##_empty(N *vec); \
     int A##_resize(N *vec, size_t cap); \
     int A##_shrink(N *vec); \
     /* split implementation */ \
@@ -109,13 +111,15 @@ typedef enum
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_FRONT(N, A, T, F);    \
     /* public */ \
-    VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);           \
+    VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);          \
     VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F);         \
     VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
+    VEC_IMPLEMENT_COMMON_CAPACITY(N, A, T, F);      \
+    VEC_IMPLEMENT_COMMON_EMPTY(N, A, T, F);         \
     VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);        \
-    VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M);  \
-    VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);    \
+    VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M); \
+    VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);   \
     VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
     VEC_IMPLEMENT_##M##_RESERVED(N, A, T, F);       \
     VEC_IMPLEMENT_##M##_RESERVE(N, A, T, F);        \
@@ -274,6 +278,19 @@ typedef enum
         return vec->len - vec->first; \
     }
 
+#define VEC_IMPLEMENT_COMMON_CAPACITY(N, A, T, F) \
+    inline size_t A##_capacity(N *vec) \
+    { \
+        assert(vec); \
+        return vec->cap; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_EMPTY(N, A, T, F) \
+    inline int A##_empty(N *vec) \
+    { \
+        assert(vec); \
+        return (vec->first == vec->len); \
+    }
 #define VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F) \
     inline int A##_resize(N *vec, size_t cap) \
     { \
