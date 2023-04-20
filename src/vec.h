@@ -103,12 +103,12 @@ typedef enum
 #define VEC_IMPLEMENT(N, A, T, M, F) \
     /* private */ \
     VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);              \
-    VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F);          \
+    VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F);           \
     VEC_IMPLEMENT_##M##_STATIC_GET(N, A, T, F);             \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_FRONT(N, A, T, F);    \
     /* public */ \
-    VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F);       \
+    VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F);         \
     VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);        \
@@ -119,8 +119,8 @@ typedef enum
     VEC_IMPLEMENT_##M##_INSERT_AT(N, A, T, F);      \
     VEC_IMPLEMENT_##M##_PUSH_FRONT(N, A, T, F);     \
     VEC_IMPLEMENT_##M##_PUSH_BACK(N, A, T, F);      \
-    VEC_IMPLEMENT_##M##_POP_FRONT(N, A, T, F);     \
-    VEC_IMPLEMENT_##M##_POP_BACK(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_POP_FRONT(N, A, T, F);      \
+    VEC_IMPLEMENT_##M##_POP_BACK(N, A, T, F);       \
     VEC_IMPLEMENT_##M##_GET_AT(N, A, T, F);         \
     VEC_IMPLEMENT_##M##_GET_FRONT(N, A, T, F);      \
     VEC_IMPLEMENT_##M##_GET_BACK(N, A, T, F);       \
