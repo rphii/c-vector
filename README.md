@@ -55,22 +55,22 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 
 ### Available Functions
 The `A##` means the `A` specified in the two macros.
-- `A##_clear` clear vector but keep capacity |
-- `A##_length` return length of of the vector in items |
-- `A##_resize` resize vector to optimal given length in items |
-- `A##_free` free all memory used |
-- `A##_reserved` return bytes allocated |
-- `A##_reserve` reserve more memory in items |
-- `A##_shrink` shrinks vector to minimal possible capacity |
-- `A##_set_at` overwrite item at index, free any previous item |
-- `A##_insert_at` insert item after index |
-- `A##_push_front` insert item in the front |
-- `A##_push_back` insert item at the back |
-- `A##_pop_front` pop item in the front |
-- `A##_pop_back` pop item at the back |
-- `A##_get_at` get item at index |
-- `A##_get_front` get item in the front |
-- `A##_get_back` get item at the back |
+- `A##_clear` clear vector but keep capacity
+- `A##_length` return length of of the vector in items
+- `A##_resize` resize vector to optimal given length in items
+- `A##_free` free all memory used
+- `A##_reserved` return bytes allocated
+- `A##_reserve` reserve more memory in items
+- `A##_shrink` shrinks vector to minimal possible capacity
+- `A##_set_at` overwrite item at index, free any previous item
+- `A##_insert_at` insert item after index
+- `A##_push_front` insert item in the front
+- `A##_push_back` insert item at the back
+- `A##_pop_front` pop item in the front
+- `A##_pop_back` pop item at the back
+- `A##_get_at` get item at index
+- `A##_get_front` get item in the front
+- `A##_get_back` get item at the back
 
 # todo so I don't forget
 - add `pop_at` pop item at index
