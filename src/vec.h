@@ -103,11 +103,11 @@ typedef enum
 #define VEC_IMPLEMENT(N, A, T, M, F) \
     /* private */ \
     VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);              \
-    VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F);           \
     VEC_IMPLEMENT_##M##_STATIC_GET(N, A, T, F);             \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_FRONT(N, A, T, F);    \
     /* public */ \
+    VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F);           \
     VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F);         \
     VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
@@ -133,12 +133,6 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
     static void (*A##_static_f)(void *) = F != 0 ? VEC_TYPE_FREE(F) : 0; \
 
-#define VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F) \
-    static void A##_static_zero(N *vec) \
-    { \
-        assert(vec); \
-        vec_memset(vec, 0, sizeof(*vec)); \
-    }
 
 /* implementation by val */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F) \
@@ -254,6 +248,13 @@ typedef enum
 /**********************************************************/
 
 /* implementation for both */
+#define VEC_IMPLEMENT_COMMON_ZERO(N, A, T, F) \
+    static void A##_zero(N *vec) \
+    { \
+        assert(vec); \
+        vec_memset(vec, 0, sizeof(*vec)); \
+    }
+
 #define VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F) \
     inline void A##_clear(N *vec) \
     { \
@@ -300,7 +301,7 @@ typedef enum
             } \
         } \
         free(vec->items); \
-        A##_static_zero(vec); \
+        A##_zero(vec); \
     }
 
 #define VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F) \
@@ -437,7 +438,7 @@ typedef enum
             free(vec->items[i]); \
         } \
         free(vec->items); \
-        A##_static_zero(vec); \
+        A##_zero(vec); \
     }
 
 #define VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F) \
