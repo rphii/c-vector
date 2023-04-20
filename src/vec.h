@@ -54,7 +54,6 @@ SOFTWARE. */
  * M = mode - either BY_VAL or BY_REF
  */
 
-//#define VEC_CONTEXT_FOREACH(T, F)     ((sizeof(T) > sizeof(void *)) || ((void *)F != (void *)NULL)) /* hoping the casting gets rid of -Waddress */
 #define VEC_DEFAULT_SIZE    4
 #define VEC_TYPE_FREE(F)    (void (*)(void *))(F)
 
@@ -153,7 +152,8 @@ typedef enum
         size_t len = vec->len; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
         while(required > len) required /= 2; \
-        if(required * 2 < vec->cap) { \
+        required *= 2; \
+        if(required  < vec->cap) { \
             if(F != 0) { \
                 for(size_t i = required; i < cap; i++) { \
                     A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
@@ -202,15 +202,13 @@ typedef enum
         size_t len = vec->len; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
         while(required > len) required /= 2; \
-        if(required * 2 < vec->cap) { \
+        required *= 2; \
+        if(required < vec->cap) { \
             for(size_t i = required; i < cap; i++) { \
                 if(F != 0) { \
                     A##_static_f(VEC_TYPE_FREE(vec->items[i])); \
                 } \
                 free(vec->items[i]); \
-            } \
-            /* TODO: is that really needed? */ for(size_t i = 0; i < cap - required; i++) { \
-                vec_memset(vec->items[required + i], 0, sizeof(T)); \
             } \
             void *temp = vec_realloc(vec->items, sizeof(*vec->items) * required); \
             if(!temp) return VEC_ERROR_REALLOC; \
@@ -549,7 +547,6 @@ typedef enum
         return A##_shrink(vec); \
     }
 
-
 #define VEC_IMPLEMENT_BY_REF_GET_AT(N, A, T, F) \
     inline T *A##_get_at(N *vec, size_t index) \
     { \
@@ -570,6 +567,7 @@ typedef enum
         assert(vec); \
         return *A##_static_get(vec, vec->len - 1); \
     }
+
 
 #define VEC_H
 #endif
