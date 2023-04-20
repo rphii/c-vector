@@ -64,13 +64,13 @@ The `A##` means the `A` specified in the two macros.
 - `A##_shrink` shrinks vector to minimal possible capacity
 - `A##_set_at` overwrite item at index, free any previous item
 - `A##_insert_at` insert item after index
-- `A##_push_front` insert item in front
-- `A##_push_back` insert item in back
-- `A##_pop_front` pop item in front
-- `A##_pop_back` pop item in back
+- `A##_push_front` insert item in the front
+- `A##_push_back` insert item at the back
+- `A##_pop_front` pop item in the front
+- `A##_pop_back` pop item at the back
 - `A##_get_at` get item at index
-- `A##_get_front` get item in front
-- `A##_get_back` get item in back
+- `A##_get_front` get item in the front
+- `A##_get_back` get item at the back
 
 # todo so I don't forget
 - add `pop_at` pop item at index
