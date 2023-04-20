@@ -95,6 +95,8 @@ typedef enum
     VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
     VEC_ITEM(T, M) A##_get_front(N *vec); \
     VEC_ITEM(T, M) A##_get_back(N *vec); \
+    VEC_ITEM(T, M)*A##_iter_begin(N *vec); \
+    VEC_ITEM(T, M)*A##_iter_end(N *vec); \
 
 /**********************************************************/
 /* IMPLEMENTATION *****************************************/
@@ -112,6 +114,8 @@ typedef enum
     VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);        \
+    VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M);  \
+    VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);    \
     VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
     VEC_IMPLEMENT_##M##_RESERVED(N, A, T, F);       \
     VEC_IMPLEMENT_##M##_RESERVE(N, A, T, F);        \
@@ -288,6 +292,22 @@ typedef enum
         A##_static_shrink_front(vec); \
         int result = A##_static_shrink_back(vec); \
         return result; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M) \
+    inline VEC_ITEM(T, M)*A##_iter_begin(N *vec) \
+    { \
+        assert(vec); \
+        assert(vec->first <= vec->len); \
+        return vec->items + vec->first; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M) \
+    inline VEC_ITEM(T, M)*A##_iter_end(N *vec) \
+    { \
+        assert(vec); \
+        assert(vec->first <= vec->len); \
+        return vec->items + vec->len; \
     }
 
 /* implementation by value */
