@@ -11,6 +11,7 @@ int main(void)
     time_t t = time(0);
 
     person_test_by_val(t);
+    printf("\n");
     person_test_by_ref(t);
 
     printf("\ndone\n");
@@ -29,7 +30,12 @@ void person_test_by_val(time_t t)
         vec_person_v_push_back(&vec, p);
     }
 
-    for(size_t i = 0; i < 100; i++) {
+    for(size_t i = 0; i < 10; i++) {
+        vec_person_v_pop_front(&vec, 0);
+    }
+    vec_person_v_shrink(&vec);
+
+    for(size_t i = 0; i < 90; i++) {
         vec_person_v_pop_front(&vec, &p);
         printf("[%zu] ", i);
         person_print(&p);
@@ -50,7 +56,12 @@ void person_test_by_ref(time_t t)
         vec_person_r_push_back(&vec, &p);
     }
 
-    for(size_t i = 0; i < 100; i++) {
+    for(size_t i = 0; i < 10; i++) {
+        vec_person_r_pop_front(&vec, 0);
+    }
+    vec_person_r_shrink(&vec);
+
+    for(size_t i = 0; i < 90; i++) {
         vec_person_r_pop_front(&vec, &p);
         printf("[%zu] ", i);
         person_print(&p);
