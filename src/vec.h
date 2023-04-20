@@ -335,6 +335,7 @@ typedef enum
     { \
         assert(vec); \
         T *item = A##_static_get(vec, index + vec->first); \
+        if(F != 0) A##_static_f(item); \
         vec_memcpy(item, &val, sizeof(T)); \
     }
 
@@ -477,6 +478,7 @@ typedef enum
         assert(vec); \
         assert(val); \
         T *item = *A##_static_get(vec, index + vec->first); \
+        if(F != 0) A##_static_f(item); \
         vec_memcpy(item, val, sizeof(T)); \
     }
 
