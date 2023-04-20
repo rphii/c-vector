@@ -172,16 +172,18 @@ typedef enum
     { \
         assert(vec); \
         size_t first = vec->first; \
-        vec->first = 0; \
-        T *item = A##_static_get(vec, 0); \
-        if(F != 0) { \
-            for(size_t i = 0; i < first; i++) { \
-                A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+        if(first) { \
+            vec->first = 0; \
+            T *item = A##_static_get(vec, 0); \
+            if(F != 0) { \
+                for(size_t i = 0; i < first; i++) { \
+                    A##_static_f(VEC_TYPE_FREE(&vec->items[i])); \
+                } \
             } \
+            vec_memmove(item, item + first, sizeof(T) * (vec->len - first)); \
+            /* TODO: is that really needed? */ vec_memset(item + vec->len - first, 0, sizeof(T) * (first)); \
+            vec->len -= first; \
         } \
-        vec_memmove(item, item + first, sizeof(T) * (vec->len - first)); \
-        vec_memset(item + vec->len - first, 0, sizeof(T) * (first)); \
-        vec->len -= first; \
     }
 
 /* implementation by ref */
