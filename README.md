@@ -72,8 +72,8 @@ The `A##` means the `A` specified in the two macros.
 - `A##_get_at` get item at index
 - `A##_get_front` get item in the front
 - `A##_get_back` get item at the back
-- `A##iter_begin` return beginning iterator
-- `A##iter_end` return end of iterator
+- `A##_iter_begin` return beginning iterator
+- `A##_iter_end` return end of iterator
 
 # todo so I don't forget
 - add `pop_at` pop item at index
