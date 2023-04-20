@@ -55,31 +55,31 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 
 ### Available Functions
 The `A##` means the `A` specified in the two macros.
-- `A##_zero` simply set to zero (unsafe)
-- `A##_clear`
-- `A##_length`
-- `A##_resize`
-- `A##_free`
-- `A##_reserved`
-- `A##_reserve`
-- `A##_shrink`
-- `A##_set_at`
-- `A##_insert_at`
-- `A##_push_front`
-- `A##_push_back`
-- `A##_pop_front`
-- `A##_pop_back`
-- `A##_get_at`
-- `A##_get_front`
-- `A##_get_back`
+- `A##_clear` clear vector but keep capacity
+- `A##_length` return length of of the vector in items
+- `A##_resize` resize vector to optimal given length in items
+- `A##_free` free all memory used
+- `A##_reserved` return bytes allocated
+- `A##_reserve` reserve more memory in items
+- `A##_shrink` shrinks vector to minimal possible capacity
+- `A##_set_at` overwrite item at index, free any previous item
+- `A##_insert_at` insert item after index
+- `A##_push_front` insert item in front
+- `A##_push_back` insert item in back
+- `A##_pop_front` pop item in front
+- `A##_pop_back` pop item in back
+- `A##_get_at` get item at index
+- `A##_get_front` get item in front
+- `A##_get_back` get item in back
 
 # todo so I don't forget
-- add `pop_at`
-- add `erase_at`
-- add `capacity`
-- add `empty`
-- add `copy`
+- add `pop_at` pop item at index
+- add `erase_at` clear and free item at
+- add `capacity` return capacity of the vector
+- add `is_empty` return if it's empty
+- add `copy` make a copy of one vector...?
+- add `emplace` insert item before index
 - bundle the snippets I copied around used for freeing into it's own function
-- add `iter_begin`
-- add `iter_end`
+- add `iter_begin` return beginning iterator
+- add `iter_end` return ending iterator
 
