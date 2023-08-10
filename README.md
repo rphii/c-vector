@@ -84,9 +84,6 @@ The `A##` means the `A` specified in the two macros.
 
 # todo so I don't forget
 - add `pop_at` pop item at index
-- ~~add `erase_at` clear and free item at index, shift rest in place~~
-- ~~add `clear_at` clear and free item at index~~
-- add `copy` make a copy of one vector...? => unlikely good when `BY_REF`...
 - add `emplace` insert item before index
 - bundle the snippets I copied around used for freeing into it's own function
 - consider removing `N.first` and anything relating to it... in order to reduce compile time...?
