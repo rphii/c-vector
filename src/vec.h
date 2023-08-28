@@ -543,6 +543,7 @@ typedef enum
             for(size_t i = len; i < required; i++) { \
                 vec->items[i] = vec_malloc(sizeof(**vec->items)); \
                 if(!vec->items[i]) return VEC_ERROR_MALLOC; \
+                vec_memset(vec->items[i], 0, sizeof(**vec->items)); \
             } \
             vec->cap = required; \
         } \
