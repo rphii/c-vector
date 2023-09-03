@@ -13,7 +13,7 @@ VEC_IMPLEMENT(N, A, T, M, F);
 ```
 1. `N` - **N**ame - the resulting name of the vector struct
 2. `A` - **A**bbreviation - functions get prefixed with that
-3. `T` - **T**ype - the type your elements within the vector
+3. `T` - **T**ype - the type of your elements within the vector
 4. `M` - **M**ode - storage type, either `BY_VAL` (by value) or `BY_REF` (by reference)
 5. `F` - **F**ree - provide a freeing function for your elements, if available
 
