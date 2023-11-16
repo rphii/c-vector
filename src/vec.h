@@ -304,8 +304,8 @@ typedef enum
         int result = VEC_ERROR_NONE; \
         A##_static_shrink_front(vec); \
         result |= result ?: A##_reserve(vec, cap); \
-        result |= result ?: A##_static_shrink_back(vec); \
         vec->len = cap; \
+        result |= result ?: A##_static_shrink_back(vec); \
         return result; \
     }
 
