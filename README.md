@@ -85,6 +85,9 @@ The `A##` means the `A` specified in the two macros.
 # todo so I don't forget
 - add `pop_at` pop item at index
 - add `emplace` insert item before index
+- add stuff that allows to pop/push/insert/emplace an entire array, or a subsection...
+- if we pushed from the front, then N.first can actually be reduced, instead of moving everything
+  one back!
 - bundle the snippets I copied around used for freeing into it's own function
 - consider removing `N.first` and anything relating to it... in order to reduce compile time...?
 

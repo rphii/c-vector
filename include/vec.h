@@ -144,11 +144,22 @@ typedef enum
 /**********************************************************/
 
 /* implementation for both */
+
+/**
+ * @brief A##_static_f [COMMON] - internal use, sets up the optional freeing function
+ */
 #define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
     static void (*A##_static_f)(void *) = F != 0 ? VEC_TYPE_FREE(F) : 0; \
 
 
 /* implementation by val */
+
+/**
+ * @brief A##_static_get [BY_VAL] - internal use, get reference to item at index
+ * @param vec - the vector
+ * @param index - the index
+ * @return pointer to item (by reference) at index
+ */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_GET(N, A, T, F) \
     static inline T *A##_static_get(N *vec, size_t index) \
     { \
@@ -158,6 +169,11 @@ typedef enum
         return &vec->items[index]; \
     }
 
+/**
+ * @brief A##_static_shrink_back [BY_VAL] - internal use, shrink end of vector (resize)
+ * @param vec - the vector
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_BACK(N, A, T, F) \
     static int A##_static_shrink_back(N *vec) \
     { \
@@ -181,6 +197,11 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_static_shrink_front [BY_VAL] - internal use, shrink vector at beginning (resize)
+ * @param vec - the vector
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_FRONT(N, A, T, F) \
     static void A##_static_shrink_front(N *vec) \
     { \
@@ -201,6 +222,13 @@ typedef enum
     }
 
 /* implementation by ref */
+
+/**
+ * @brief A##_static_get [BY_REF] - internal use, get reference to item at index
+ * @param vec - the vector
+ * @param index - the index
+ * @return pointer to item (by reference) at index
+ */
 #define VEC_IMPLEMENT_BY_REF_STATIC_GET(N, A, T, F) \
     static inline T **A##_static_get(N *vec, size_t index) \
     { \
@@ -210,6 +238,11 @@ typedef enum
         return &vec->items[index]; \
     }
 
+/**
+ * @brief A##_static_shrink_back [BY_REF] - internal use, shrink end of vector (resize)
+ * @param vec - the vector
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_BACK(N, A, T, F) \
     static inline int A##_static_shrink_back(N *vec) \
     { \
@@ -234,6 +267,11 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_static_shrink_front [BY_REF] - internal use, shrink vector at beginning (resize)
+ * @param vec - the vector
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_FRONT(N, A, T, F) \
     static inline void A##_static_shrink_front(N *vec) \
     { \
@@ -262,6 +300,12 @@ typedef enum
 /**********************************************************/
 
 /* implementation for both */
+
+/**
+ * @brief A##_static_zero [COMMON] - set the vector struct without freeing to zero
+ * @param vec - the vector
+ * @return void
+ */
 #define VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F) \
     static void A##_static_zero(N *vec) \
     { \
@@ -269,6 +313,11 @@ typedef enum
         vec_memset(vec, 0, sizeof(*vec)); \
     }
 
+/**
+ * @brief A##_clear [COMMON] - set the vector length to zero without leaving it's allocated memory unchanged (aka. recycle)
+ * @param vec - the vector
+ * @return void
+ */
 #define VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F) \
     inline void A##_clear(N *vec) \
     { \
@@ -277,6 +326,11 @@ typedef enum
         vec->len = 0; \
     }
 
+/**
+ * @brief A##_length [COMMON] - get the indexed vector length (in items)
+ * @param vec - the vector
+ * @return length in items
+ */
 #define VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F) \
     inline size_t A##_length(N *vec) \
     { \
@@ -284,6 +338,11 @@ typedef enum
         return vec->len - vec->first; \
     }
 
+/**
+ * @brief A##_capacity [COMMON] - get number of allocated item spaces (not in bytes)
+ * @param vec - the vector
+ * @return capacity in item spaces
+ */
 #define VEC_IMPLEMENT_COMMON_CAPACITY(N, A, T, F) \
     inline size_t A##_capacity(N *vec) \
     { \
@@ -291,12 +350,24 @@ typedef enum
         return vec->cap; \
     }
 
+/**
+ * @brief A##_empty [COMMON] - check if vector is empty
+ * @param vec - the vector
+ * @return boolean comparison: true if empty, false if not empty
+ */
 #define VEC_IMPLEMENT_COMMON_EMPTY(N, A, T, F) \
     inline int A##_empty(N *vec) \
     { \
         assert(vec); \
         return (vec->first == vec->len); \
     }
+
+/**
+ * @brief A##_resize [COMMON] - resize vector to be able to hold a certain number of items
+ * @param vec - the vector
+ * @param cap - certain number of items
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F) \
     inline int A##_resize(N *vec, size_t cap) \
     { \
@@ -309,6 +380,11 @@ typedef enum
         return result; \
     }
 
+/**
+ * @brief A##_shrink [COMMON] - shrink memory usage to minimum number of items while still capable of holding the current number of items in use
+ * @param vec - the vector
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F) \
     inline int A##_shrink(N *vec) \
     { \
@@ -318,6 +394,11 @@ typedef enum
         return result; \
     }
 
+/**
+ * @brief A##_iter_begin [COMMON] - get pointer to first item
+ * @param vec - the vector
+ * @return pointer to first item
+ */
 #define VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M) \
     inline VEC_ITEM(T, M)*A##_iter_begin(N *vec) \
     { \
@@ -326,6 +407,11 @@ typedef enum
         return vec->items + vec->first; \
     }
 
+/**
+ * @brief A##_iter_end [COMMON] - get pointer to one past last item
+ * @param vec - the vector
+ * @return pointer to one past last item
+ */
 #define VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M) \
     inline VEC_ITEM(T, M)*A##_iter_end(N *vec) \
     { \
@@ -334,7 +420,14 @@ typedef enum
         return vec->items + vec->len; \
     }
 
+
 /* implementation by value */
+
+/**
+ * @brief A##_free [BY_VAL] - free the vector and all it's items
+ * @param vec - the vector
+ * @return void
+ */
 #define VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
@@ -348,6 +441,11 @@ typedef enum
         A##_static_zero(vec); \
     }
 
+/**
+ * @brief A##_zero [BY_VAL] - set the vector struct without freeing to zero
+ * @param vec - the vector
+ * @return void
+ */
 #define VEC_IMPLEMENT_BY_VAL_ZERO(N, A, T, F) \
     inline void A##_zero(N *vec) \
     { \
@@ -355,6 +453,11 @@ typedef enum
         vec_memset(vec->items, 0, sizeof(*vec->items) * vec->cap); \
     }
 
+/**
+ * @brief A##_reserved [BY_VAL] - get reserved number of bytes
+ * @param vec - the vector struct
+ * @return allocated size in bytes
+ */
 #define VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F) \
     inline size_t A##_reserved(N *vec) \
     { \
@@ -364,6 +467,12 @@ typedef enum
         return result; \
     }
 
+/**
+ * @brief A##_reserve [BY_VAL] - reserve memory for a certain minimum number of items (only expanding), doesn't change the indexed vector length
+ * @param vec - the vector
+ * @param cap - the minimum desired item capacity
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_RESERVE(N, A, T, F) \
     inline int A##_reserve(N *vec, size_t cap) \
     { \
@@ -383,6 +492,13 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_set_at [BY_VAL] - overwrite one item at certain index
+ * @param vec - the vector
+ * @param index - the certain index
+ * @param val - the value (by value) to overwrite said index with
+ * @return void
+ */
 #define VEC_IMPLEMENT_BY_VAL_SET_AT(N, A, T, F) \
     void A##_set_at(N *vec, size_t index, T val) \
     { \
@@ -393,6 +509,13 @@ typedef enum
         vec_memcpy(item, &val, sizeof(T)); \
     }
 
+/**
+ * @brief A##_insert_at [BY_VAL] - add one item at index and move everything back
+ * @param vec - the vector
+ * @param index - the index
+ * @param val - the value (by value) to be written to said index
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_INSERT_AT(N, A, T, F) \
     int A##_insert_at(N *vec, size_t index, T val) \
     { \
@@ -406,6 +529,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_push_front [BY_VAL] - push one item from the front and move everything back
+ * @param vec - the vector
+ * @param val - the value (by value) to be pushed
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_PUSH_FRONT(N, A, T, F) \
     inline int A##_push_front(N *vec, T val) \
     { \
@@ -419,6 +548,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_push_back [BY_VAL] - push one item do the back
+ * @param vec - the vector
+ * @param val - the value (by value) to be pushed
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_PUSH_BACK(N, A, T, F) \
     inline int A##_push_back(N *vec, T val) \
     { \
@@ -431,6 +566,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_pop_front [BY_VAL] - pop one item from the front (and adjust first index)
+ * @param vec - the vector
+ * @param val - write back for popped value, pass 0 to ignore
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_POP_FRONT(N, A, T, F) \
     inline int A##_pop_front(N *vec, T *val) \
     { \
@@ -445,6 +586,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_pop_back [BY_VAL] - pop one item from the back (and adjust length)
+ * @param vec - the vector
+ * @param val - write back for popped value, pass 0 to ignore
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_POP_BACK(N, A, T, F) \
     inline int A##_pop_back(N *vec, T *val) \
     { \
@@ -459,6 +606,12 @@ typedef enum
         return A##_shrink(vec); \
     }
 
+/**
+ * @brief A##_get_at [BY_VAL] - get item at certain index
+ * @param vec - the vector
+ * @param index - the index
+ * @return item (by value) at index
+ */
 #define VEC_IMPLEMENT_BY_VAL_GET_AT(N, A, T, F) \
     inline T A##_get_at(N *vec, size_t index) \
     { \
@@ -466,6 +619,11 @@ typedef enum
         return *A##_static_get(vec, index + vec->first); \
     }
 
+/**
+ * @brief A##_get_front [BY_VAL] - get item at front
+ * @param vec - the vector
+ * @return item (by value) at front
+ */
 #define VEC_IMPLEMENT_BY_VAL_GET_FRONT(N, A, T, F) \
     inline T A##_get_front(N *vec) \
     { \
@@ -473,6 +631,11 @@ typedef enum
         return *A##_static_get(vec, vec->first); \
     }
 
+/**
+ * @brief A##_get_back [BY_VAL] - get item at end
+ * @param vec - the vector
+ * @return item (by value) at end
+ */
 #define VEC_IMPLEMENT_BY_VAL_GET_BACK(N, A, T, F) \
     inline T A##_get_back(N *vec) \
     { \
@@ -480,6 +643,12 @@ typedef enum
         return *A##_static_get(vec, vec->len - 1); \
     }
 
+/**
+ * @brief A##_copy [BY_VAL] - copy a vector and its items
+ * @param dst - the destination vector
+ * @param src - the source vector
+ * @return zero if succes, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_VAL_COPY(N, A, T, F) \
     inline int A##_copy(N *dst, N *src) \
     { \
@@ -491,10 +660,17 @@ typedef enum
         if(result) return result; \
         vec_memcpy(dst->items, src->items, sizeof(*dst->items) * A##_length(src)); \
         dst->len = A##_length(src); \
-        return 0; \
+        return VEC_ERROR_NONE; \
     }
 
+
 /* implementaiton by reference */
+
+/**
+ * @brief A##_free [BY_REF] - free the vector and all it's items
+ * @param vec - the vector
+ * @return void
+ */
 #define VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
@@ -509,6 +685,11 @@ typedef enum
         A##_static_zero(vec); \
     }
 
+/**
+ * @brief A##_zero [BY_REF] - set the vector struct items without freeing to zero
+ * @param vec - the vector
+ * @return void
+ */
 #define VEC_IMPLEMENT_BY_REF_ZERO(N, A, T, F) \
     inline void A##_zero(N *vec) \
     { \
@@ -518,6 +699,11 @@ typedef enum
         } \
     }
 
+/**
+ * @brief A##_reserved [BY_REF] - get reserved number of bytes
+ * @param vec - the vector struct
+ * @return allocated size in bytes
+ */
 #define VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F) \
     inline size_t A##_reserved(N *vec) \
     { \
@@ -528,6 +714,12 @@ typedef enum
         return result; \
     }
 
+/**
+ * @brief A##_reserve [BY_REF] - reserve memory for a certain minimum number of items (only expanding), doesn't change the indexed vector length
+ * @param vec - the vector
+ * @param cap - the minimum desired item capacity
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_RESERVE(N, A, T, F) \
     inline int A##_reserve(N *vec, size_t cap) \
     { \
@@ -550,6 +742,13 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_set_at [BY_REF] - overwrite one item at certain index
+ * @param vec - the vector
+ * @param index - the certain index
+ * @param val - the value (by reference) to overwrite said index with
+ * @return void
+ */
 #define VEC_IMPLEMENT_BY_REF_SET_AT(N, A, T, F) \
     void A##_set_at(N *vec, size_t index, T *val) \
     { \
@@ -560,6 +759,13 @@ typedef enum
         vec_memcpy(item, val, sizeof(T)); \
     }
 
+/**
+ * @brief A##_insert_at [BY_REF] - add one item at index and move everything back
+ * @param vec - the vector
+ * @param index - the index
+ * @param val - the value (by reference) to be written to said index
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_INSERT_AT(N, A, T, F) \
     int A##_insert_at(N *vec, size_t index, T *val) \
     { \
@@ -574,6 +780,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_push_front [BY_REF] - push one item from the front and move everything back
+ * @param vec - the vector
+ * @param val - the value (by reference) to be pushed
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_PUSH_FRONT(N, A, T, F) \
     inline int A##_push_front(N *vec, T *val) \
     { \
@@ -588,6 +800,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_push_back [BY_REF] - push one item do the back
+ * @param vec - the vector
+ * @param val - the value (by reference) to be pushed
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_PUSH_BACK(N, A, T, F) \
     inline int A##_push_back(N *vec, T *val) \
     { \
@@ -601,6 +819,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_pop_front [BY_REF] - pop one item from the front (and adjust first index)
+ * @param vec - the vector
+ * @param val - write back for popped value, pass 0 to ignore
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_POP_FRONT(N, A, T, F) \
     inline int A##_pop_front(N *vec, T *val) \
     { \
@@ -615,6 +839,12 @@ typedef enum
         return VEC_ERROR_NONE; \
     }
 
+/**
+ * @brief A##_pop_back [BY_REF] - pop one item from the back (and adjust length)
+ * @param vec - the vector
+ * @param val - write back for popped value, pass 0 to ignore
+ * @return zero if success, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_POP_BACK(N, A, T, F) \
     inline int A##_pop_back(N *vec, T *val) \
     { \
@@ -629,6 +859,12 @@ typedef enum
         return A##_shrink(vec); \
     }
 
+/**
+ * @brief A##_get_at [BY_REF] - get item at certain index
+ * @param vec - the vector
+ * @param index - the index
+ * @return item (by reference) at index
+ */
 #define VEC_IMPLEMENT_BY_REF_GET_AT(N, A, T, F) \
     inline T *A##_get_at(N *vec, size_t index) \
     { \
@@ -636,6 +872,11 @@ typedef enum
         return *A##_static_get(vec, index + vec->first); \
     }
 
+/**
+ * @brief A##_get_front [BY_REF] - get item at front
+ * @param vec - the vector
+ * @return item (by reference) at front
+ */
 #define VEC_IMPLEMENT_BY_REF_GET_FRONT(N, A, T, F) \
     inline T *A##_get_front(N *vec) \
     { \
@@ -643,6 +884,11 @@ typedef enum
         return *A##_static_get(vec, vec->first); \
     }
 
+/**
+ * @brief A##_get_back [BY_REF] - get item at end
+ * @param vec - the vector
+ * @return item (by reference) at end
+ */
 #define VEC_IMPLEMENT_BY_REF_GET_BACK(N, A, T, F) \
     inline T *A##_get_back(N *vec) \
     { \
@@ -650,6 +896,12 @@ typedef enum
         return *A##_static_get(vec, vec->len - 1); \
     }
 
+/**
+ * @brief A##_copy [BY_REF] - copy a vector and its items
+ * @param dst - the destination vector
+ * @param src - the source vector
+ * @return zero if succes, non-zero if failure
+ */
 #define VEC_IMPLEMENT_BY_REF_COPY(N, A, T, F) \
     inline int A##_copy(N *dst, N *src) \
     { \

@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-#include "../src/vec.h"
+#include "vec.h"
 
 
 #define STR_DEFAULT_SIZE    8

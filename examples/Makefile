@@ -1,7 +1,7 @@
 .SUFFIXES:
 
 CC      := gcc
-CFLAGS  := -Wall -O3
+CFLAGS  := -Wall -O3 -I"../include"
 
 OBJ_DIR := obj
 BIN_DIR := bin

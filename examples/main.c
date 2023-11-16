@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#include "../src/vec.h"
+#include "vec.h"
 
 VEC_INCLUDE(VecSize, vec_size, size_t, BY_VAL);
 VEC_INCLUDE(Vec2Size, vec2_size, VecSize, BY_REF);

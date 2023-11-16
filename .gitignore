@@ -1,5 +1,6 @@
 *.exe
 obj/*
+bin
 *.stackdump
 *.o
 tags
