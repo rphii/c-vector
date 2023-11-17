@@ -42,7 +42,8 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 ```
 
 ## Design Considerations
-- Both `BY_VAL` and `BY_REF` can be used on either basic types or (complex) structs.
+- Both `BY_VAL` and `BY_REF` can be used on either basic types or (complex) structs. Either way, if
+  you (e.g.) push back a value, its content is copied
 - Generally speaking, I'd use the latter when dealing with structs where `sizeof struct > sizeof(void *)`.
 - I went ahead and compared the very basic performance between the two approaches [here](https://github.com/rphii/vec_test).
 
