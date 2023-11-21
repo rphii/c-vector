@@ -58,9 +58,12 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 - Compilation overhead
 
 ## How to use it
+### Examples
+- `$ cd examples && make` (binaries in subfolder "bin") -> WIP, I want to add more examples
 
-### Ignore the `compile_flags.txt` files
-I added those only so that my LSP knows what's up.
+### Tests
+- `$ cd test && make` (binaries in subfolder "bin") -> WIP, I want to add more tests to make the vector bug free
+- Ignore the `compile_flags.txt` files -> I added those only so that my LSP knows what's up.
 
 ### Available Functions
 The `A##` means the `A` specified in the two macros.
