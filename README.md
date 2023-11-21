@@ -59,6 +59,9 @@ VEC_IMPLEMENT(Vec2U8, vec2_u8, VecU8, BY_REF, vec_u8_free);
 
 ## How to use it
 
+### Ignore the `compile_flags.txt` files
+I added those only so that my LSP knows what's up.
+
 ### Available Functions
 The `A##` means the `A` specified in the two macros.
 - `A##_zero` set vector to zero without freeing
