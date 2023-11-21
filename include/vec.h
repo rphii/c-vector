@@ -54,8 +54,13 @@ SOFTWARE. */
  * M = mode - either BY_VAL or BY_REF
  */
 
-#define VEC_DEFAULT_SIZE    4
 #define VEC_TYPE_FREE(F)    (void (*)(void *))(F)
+
+#ifdef  VEC_SETTINGS_DEFAULT_SIZE
+#define VEC_DEFAULT_SIZE VEC_SETTINGS_DEFAULT_SIZE
+#else
+#define VEC_DEFAULT_SIZE    4
+#endif
 
 #ifdef  VEC_SETTINGS_STRUCT_ITEMS
 #define VEC_STRUCT_ITEMS VEC_SETTINGS_STRUCT_ITEMS

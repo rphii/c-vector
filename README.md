@@ -105,6 +105,7 @@ recommend the following:
 - `VEC_SETTINGS_STRUCT_ITEMS` literal; specify the name of the `items` placeholder to something
   else, if you so desire (e.g. string implementation, where it makes more sense to use another
   literal besides the previously mentioned for the string placeholder)
+- `VEC_SETTINGS_DEFAULT_SIZE` number; specify how many item spaces shall be reserved minimally
 
 # todo so I don't forget
 - add `pop_at` pop item at index
