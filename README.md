@@ -86,6 +86,23 @@ The `A##` means the `A` specified in the two macros.
 - `A##_iter_begin` return beginning iterator
 - `A##_iter_end` return end of iterator
 
+### Additional Settings
+There are various settings one can adjust to fit the vector to his needs. To use those, I strongly
+recommend the following:
+- In header files (using the `INCLUDE` macro) -> `#define` the respective settings before
+  including `vec.h`. Before the end of your header `#undef` them, so that other possible vectors
+  that may create a vector of such a "modified" vector with custom settings reverts back to the
+  defaults
+- In source files (using the `IMPLEMENT` macro) -> `#define` the respective settings after you
+  included your custom vector header and have them be equal.
+
+#### Settings list
+- `VEC_SETTINGS_KEEP_ZERO_END` number; specify how much zero memory should be kept at the end when
+  reserving memory (e.g. string implementation)
+- `VEC_SETTINGS_STRUCT_ITEMS` literal; specify the name of the `items` placeholder to something
+  else, if you so desire (e.g. string implementation, where it makes more sense to use another
+  literal besides the previously mentioned for the string placeholder)
+
 # todo so I don't forget
 - add `pop_at` pop item at index
 - add `emplace` insert item before index
