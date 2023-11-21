@@ -90,14 +90,14 @@ The `A##` means the `A` specified in the two macros.
 - `A##_iter_end` return end of iterator
 
 ### Additional Settings
-There are various settings one can adjust to fit the vector to his needs. To use those, I strongly
+There are various settings one can adjust to fit the vector to their needs. To use those, I strongly
 recommend the following:
 - In header files (using the `INCLUDE` macro) -> `#define` the respective settings before
   including `vec.h`. Before the end of your header `#undef` them, so that other possible vectors
   that may create a vector of such a "modified" vector with custom settings reverts back to the
   defaults
 - In source files (using the `IMPLEMENT` macro) -> `#define` the respective settings after you
-  included your custom vector header and have them be equal.
+  included your custom vector header and have them be equally set.
 
 #### Settings list
 - `VEC_SETTINGS_KEEP_ZERO_END` number; specify how much zero memory should be kept at the end when
