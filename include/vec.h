@@ -63,10 +63,10 @@ SOFTWARE. */
 #define VEC_STRUCT_ITEMS items
 #endif
 
-#ifdef  VEC_SETTINGS_KEEP_ZERO
-#define VEC_KEEP_ZERO VEC_SETTINGS_KEEP_ZERO
+#ifdef  VEC_SETTINGS_KEEP_ZERO_END
+#define VEC_KEEP_ZERO_END VEC_SETTINGS_KEEP_ZERO_END
 #else
-#define VEC_KEEP_ZERO 0
+#define VEC_KEEP_ZERO_END 0
 #endif
 
 typedef enum
@@ -662,7 +662,7 @@ typedef enum
     inline int A##_reserve(N *vec, size_t cap) \
     { \
         assert(vec); \
-        cap += VEC_KEEP_ZERO; \
+        cap += VEC_KEEP_ZERO_END; \
         size_t cap_is = vec->cap; \
         if(cap > cap_is) { \
             size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
@@ -759,7 +759,7 @@ typedef enum
     inline int A##_reserve(N *vec, size_t cap) \
     { \
         assert(vec); \
-        cap += VEC_KEEP_ZERO; \
+        cap += VEC_KEEP_ZERO_END; \
         size_t cap_is = vec->cap; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
         while(required < cap) required *= 2; \
