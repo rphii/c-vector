@@ -57,14 +57,14 @@ SOFTWARE. */
 #define VEC_DEFAULT_SIZE    4
 #define VEC_TYPE_FREE(F)    (void (*)(void *))(F)
 
-#ifdef  VEC_SETTING_STRUCT_ITEMS
-#define VEC_STRUCT_ITEMS VEC_SETTING_STRUCT_ITEMS
+#ifdef  VEC_SETTINGS_STRUCT_ITEMS
+#define VEC_STRUCT_ITEMS VEC_SETTINGS_STRUCT_ITEMS
 #else
 #define VEC_STRUCT_ITEMS items
 #endif
 
-#ifdef  VEC_SETTING_KEEP_ZERO
-#define VEC_KEEP_ZERO VEC_SETTING_KEEP_ZERO
+#ifdef  VEC_SETTINGS_KEEP_ZERO
+#define VEC_KEEP_ZERO VEC_SETTINGS_KEEP_ZERO
 #else
 #define VEC_KEEP_ZERO 0
 #endif
@@ -96,7 +96,7 @@ typedef enum
         size_t cap; \
         size_t last; \
         size_t first; \
-        VEC_ITEM(T, M)*items; \
+        VEC_ITEM(T, M) *VEC_STRUCT_ITEMS; \
     } N; \
     \
     /* common implementation */ \
