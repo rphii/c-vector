@@ -5,7 +5,7 @@ endif
 endif
 
 GIT_VERSION := "$(shell git describe --abbrev=4 --dirty --always --tags)"
-CC	  := gcc
+CC	  := tcc #clang #gcc
 LDFLAGS := -fsanitize=address \
 		   #-rdynamic -pg \
 
@@ -40,7 +40,7 @@ endef
 define compile_job
 $2/%.o: $3/%$(CSUFFIX) Makefile | $2
 	@echo compile : $$<
-	@$$(CC) $1 -DVERSION=\"$$(GIT_VERSION)\" -c -MMD -MP -o $$(addprefix $2/,$$(notdir $$(basename $$<)).o) $$<
+	@$$(CC) $1 -DVERSION=\"$$(GIT_VERSION)\" -c -MMD -o $$(addprefix $2/,$$(notdir $$(basename $$<)).o) $$<
 endef
 
 ### CREATE BINARY FUNCTION : $(call CFLAGS,LDFLAGS,OBJ_DIR,BIN_PATH,PATH/TO/FILE.c PATH/TO/ANOTHERFILE.c)
@@ -80,7 +80,13 @@ $4$$(XSUFFIX): $$(O_FILES) | $$(BIN_DIR)
 endef
 
 all: $(TARGETS)
-$(eval $(call binary,$(CFLAGS),$(LDFLAGS),$(OBJ_DIR),bin/test,src/main.c src/unity.c src/vu8.c src/rvu8.c))
+$(eval $(call binary,$(CFLAGS),$(LDFLAGS),$(OBJ_DIR),bin/test,src/main.c src/unity.c \
+	src/vu8.c src/vu16.c src/vu32.c src/vu64.c \
+	src/rvu8.c src/rvu16.c src/rvu32.c src/rvu64.c \
+	src/vi8.c src/vi16.c src/vi32.c src/vi64.c \
+	src/rvi8.c src/rvi16.c src/rvi32.c src/rvi64.c \
+	str/str.c str/vstr.c src/rvstr.c \
+	))
 
 #$(BIN_DIR):
 #	mkdir $(BIN_DIR)

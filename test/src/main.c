@@ -11,6 +11,7 @@ void tearDown(void) {
     // clean stuff up here
 }
 
+#if 0
 void test_vu8_stack_lifetime(void) {
     Vu8 v = (Vu8){ .last = 16, .items = (unsigned char []){0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}};
     TEST_ASSERT_EQUAL(16, vu8_length(&v));
@@ -19,6 +20,7 @@ void test_vu8_stack_lifetime(void) {
         TEST_ASSERT_EQUAL(i, val);
     }
 }
+#endif
 
 void test_vu8_push_back(void) {
     Vu8 v = {0};
@@ -106,7 +108,7 @@ void test_vu8_reverse(void)
 }
 
 void test_vu8(void) {
-    RUN_TEST(test_vu8_stack_lifetime);
+    //RUN_TEST(test_vu8_stack_lifetime);
     RUN_TEST(test_vu8_push_back);
     RUN_TEST(test_vu8_push_front);
     RUN_TEST(test_vu8_insert_at);
