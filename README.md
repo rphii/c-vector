@@ -86,6 +86,8 @@ The `A##` means the `A` specified in the two macros.
 - `A##_get_at` get item at index
 - `A##_get_front` get item in the front
 - `A##_get_back` get item at the back
+- `A##_swap` swap two items by index
+- `A##_reverse` reverse the vector
 - `A##_iter_begin` return beginning iterator
 - `A##_iter_end` return end of iterator
 
