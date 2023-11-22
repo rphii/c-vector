@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
-#ifndef VEC_H
+//#ifndef VEC_H
 
 #include <stddef.h>
 #include <string.h>
@@ -46,15 +46,9 @@ SOFTWARE. */
 #define vec_memmove memmove
 #endif
 
-/*
- * N = name - used for the type name
- * A = abbreviation - used for the functions
- * T = type - the actual type to base the vector off of
- * F = free - function to use if your structure itself has a custom free routine
- * M = mode - either BY_VAL or BY_REF
- */
-
-#define VEC_TYPE_FREE(F)    (void (*)(void *))(F)
+#undef VEC_DEFAULT_SIZE
+#undef VEC_STRUCT_ITEMS
+#undef VEC_KEEP_ZERO_END
 
 #ifdef  VEC_SETTINGS_DEFAULT_SIZE
 #define VEC_DEFAULT_SIZE VEC_SETTINGS_DEFAULT_SIZE
@@ -73,6 +67,11 @@ SOFTWARE. */
 #else
 #define VEC_KEEP_ZERO_END 0
 #endif
+
+
+#ifndef VEC_H
+
+#define VEC_TYPE_FREE(F)    ((void (*)(void *))(F))
 
 typedef enum
 {
@@ -95,6 +94,18 @@ typedef enum
 #define VEC_ASSERT_BY_REF(x)    assert(x)
 #define VEC_ASSERT_BY_VAL(x)
 #define VEC_ASSERT(x, M)        VEC_ASSERT_##M(x)
+
+#define VEC_H
+#endif
+
+/*
+ * === THE VECTOR DESCRIPTION ===
+ * N = name - used for the type name
+ * A = abbreviation - used for the functions
+ * T = type - the actual type to base the vector off of
+ * F = free - function to use if your structure itself has a custom free routine
+ * M = mode - either BY_VAL or BY_REF
+ */
 
 #define VEC_INCLUDE(N, A, T, M) \
     typedef struct N { \
@@ -143,7 +154,7 @@ typedef enum
 
 #define VEC_IMPLEMENT(N, A, T, M, F) \
     /* private */ \
-    VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);              \
+    /*VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);              */\
     VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F);           \
     VEC_IMPLEMENT_COMMON_STATIC_GET(N, A, T, F, M);             \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
@@ -183,8 +194,9 @@ typedef enum
 /**
  * @brief A##_static_f [COMMON] - internal use, sets up the optional freeing function
  */
-#define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
+/*#define VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F) \
     static void (*A##_static_f)(void *) = F != 0 ? VEC_TYPE_FREE(F) : 0; \
+    */
 
 
 /* implementation by val */
@@ -221,7 +233,7 @@ typedef enum
         if(required  < vec->cap) { \
             if(F != 0) { \
                 for(size_t i = required; i < cap; i++) { \
-                    A##_static_f(VEC_TYPE_FREE(&vec->VEC_STRUCT_ITEMS[i])); \
+                    VEC_TYPE_FREE(F)(&vec->VEC_STRUCT_ITEMS[i]); \
                 } \
             } \
             void *temp = vec_realloc(vec->VEC_STRUCT_ITEMS, sizeof(*vec->VEC_STRUCT_ITEMS) * required); \
@@ -247,7 +259,7 @@ typedef enum
             T *item = A##_static_get(vec, 0); \
             if(F != 0) { \
                 for(size_t i = 0; i < first; i++) { \
-                    A##_static_f(VEC_TYPE_FREE(&vec->VEC_STRUCT_ITEMS[i])); \
+                    VEC_TYPE_FREE(F)(&vec->VEC_STRUCT_ITEMS[i]); \
                 } \
             } \
             vec_memmove(item, item + first, sizeof(T) * (vec->last - first)); \
@@ -275,7 +287,7 @@ typedef enum
         if(required < vec->cap) { \
             for(size_t i = required; i < cap; i++) { \
                 if(F != 0) { \
-                    A##_static_f(VEC_TYPE_FREE(vec->VEC_STRUCT_ITEMS[i])); \
+                    VEC_TYPE_FREE(F)(vec->VEC_STRUCT_ITEMS[i]); \
                 } \
                 free(vec->VEC_STRUCT_ITEMS[i]); \
             } \
@@ -302,7 +314,7 @@ typedef enum
             T **item = A##_static_get(vec, 0); \
             if(F != 0) { \
                 for(size_t i = 0; i < first; i++) { \
-                    A##_static_f(VEC_TYPE_FREE(vec->VEC_STRUCT_ITEMS[i])); \
+                    VEC_TYPE_FREE(F)(vec->VEC_STRUCT_ITEMS[i]); \
                 } \
             } \
             T **residuals = malloc(sizeof(T *) * first); \
@@ -528,7 +540,7 @@ typedef enum
         assert(vec); \
         VEC_ASSERT(val, M); \
         T *item = VEC_REF(M) *A##_static_get(vec, index + vec->first); \
-        if(F != 0) A##_static_f(item); \
+        if(F != 0) VEC_TYPE_FREE(F)(item); \
         vec_memcpy(item, VEC_REF(M) val, sizeof(T)); \
     }
 
@@ -640,7 +652,7 @@ typedef enum
         assert(vec); \
         if(F != 0) { \
             for(size_t i = 0; i < vec->cap; i++) { \
-                A##_static_f(VEC_TYPE_FREE(&vec->VEC_STRUCT_ITEMS[i])); \
+                VEC_TYPE_FREE(F)(&vec->VEC_STRUCT_ITEMS[i]); \
             } \
         } \
         free(vec->VEC_STRUCT_ITEMS); \
@@ -733,7 +745,7 @@ typedef enum
         assert(vec); \
         for(size_t i = 0; i < vec->cap; i++) { \
             if(F != 0) { \
-                A##_static_f(VEC_TYPE_FREE(vec->VEC_STRUCT_ITEMS[i])); \
+                VEC_TYPE_FREE(F)(vec->VEC_STRUCT_ITEMS[i]); \
             } \
             free(vec->VEC_STRUCT_ITEMS[i]); \
         } \
@@ -820,7 +832,6 @@ typedef enum
         return result; \
     }
 
-
-#define VEC_H
-#endif
+//#define VEC_H
+//#endif
 
