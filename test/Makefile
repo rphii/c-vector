@@ -6,13 +6,14 @@ endif
 
 GIT_VERSION := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 CC	  := gcc
-LDFLAGS := #-rdynamic -pg \
-		   #-fsanitize=address
+LDFLAGS := -fsanitize=address \
+		   #-rdynamic -pg \
+
 CFLAGS  := -Wall -Wextra \
 		   -I"../include/" \
+		   -fsanitize=address \
 		   #-rdynamic -pg \
 		   -O3 -march=native \
-		   #-fsanitize=address
 
 BIN_DIR := bin
 OBJ_DIR := obj
@@ -79,7 +80,7 @@ $4$$(XSUFFIX): $$(O_FILES) | $$(BIN_DIR)
 endef
 
 all: $(TARGETS)
-$(eval $(call binary,$(CFLAGS),$(LDFLAGS),$(OBJ_DIR),bin/test,src/main.c src/unity.c src/vu8.c))
+$(eval $(call binary,$(CFLAGS),$(LDFLAGS),$(OBJ_DIR),bin/test,src/main.c src/unity.c src/vu8.c src/rvu8.c))
 
 #$(BIN_DIR):
 #	mkdir $(BIN_DIR)

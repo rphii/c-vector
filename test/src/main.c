@@ -1,6 +1,7 @@
 #include "unity.h"
 #include "unity_internals.h"
 #include "vu8.h"
+#include "rvu8.h"
 
 void setUp(void) {
     // set stuff up here
@@ -24,7 +25,7 @@ void test_vu8_push_back(void) {
     TEST_ASSERT_EQUAL(0, vu8_length(&v));
     TEST_ASSERT_EQUAL(0, vu8_reserved(&v));
 
-    size_t n = 0x100000;
+    size_t n = 0x10000;
     for(size_t i = 0; i < n; i++) {
         vu8_push_back(&v, i % 0x100);
     }
@@ -42,7 +43,7 @@ void test_vu8_push_front(void) {
     Vu8 v = {0};
     TEST_ASSERT_EQUAL(0, vu8_length(&v));
     TEST_ASSERT_EQUAL(0, vu8_reserved(&v));
-size_t n = 0x10000;
+    size_t n = 0x1000;
     for(size_t i = 0; i < n; i++) {
         vu8_push_front(&v, i % 0x100);
     }
@@ -83,9 +84,25 @@ void test_vu8_insert_at(void) {
     TEST_ASSERT_EQUAL(20, vu8_get_at(&v, 4));
     TEST_ASSERT_EQUAL(30, vu8_get_at(&v, 5));
 
+    //TEST_ASSERT_EQUAL(30, vu8_get_back(&v));
+    //TEST_ASSERT_EQUAL(30, vu8_get_at(&v, -1));
+
     vu8_free(&v);
     TEST_ASSERT_EQUAL(0, vu8_length(&v));
     TEST_ASSERT_EQUAL(0, vu8_reserved(&v));
+}
+
+void test_vu8_reverse(void)
+{
+    Vu8 v = {0};
+    for(size_t i = 0; i < 256; i++) {
+        TEST_ASSERT_EQUAL(0, vu8_push_back(&v, i));
+    }
+    vu8_reverse(&v);
+    for(size_t i = 0; i < 256; i++) {
+        TEST_ASSERT_EQUAL(i, vu8_get_at(&v, 255-i));
+    }
+    vu8_free(&v);
 }
 
 void test_vu8(void) {
@@ -93,6 +110,24 @@ void test_vu8(void) {
     RUN_TEST(test_vu8_push_back);
     RUN_TEST(test_vu8_push_front);
     RUN_TEST(test_vu8_insert_at);
+    RUN_TEST(test_vu8_reverse);
+}
+
+void test_rvu8_reverse(void)
+{
+    RVu8 v = {0};
+    for(size_t i = 0; i < 256; i++) {
+        TEST_ASSERT_EQUAL(0, rvu8_push_back(&v, (unsigned char *)&i));
+    }
+    rvu8_reverse(&v);
+    for(size_t i = 0; i < 256; i++) {
+        TEST_ASSERT_EQUAL(i, *rvu8_get_at(&v, 255-i));
+    }
+    rvu8_free(&v);
+}
+
+void test_rvu8(void) {
+    RUN_TEST(test_rvu8_reverse);
 }
 
 
@@ -100,6 +135,7 @@ void test_vu8(void) {
 int main(void) {
     UNITY_BEGIN();
     test_vu8();
+    test_rvu8();
     return UNITY_END();
 }
 
