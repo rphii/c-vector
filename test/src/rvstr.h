@@ -1,11 +1,11 @@
-#ifndef VSTR_H
+#ifndef RVSTR_H
 
 #include "str.h"
 
 #include "vec.h"
 VEC_INCLUDE(RVStr, rvstr, Str, BY_REF);
 
-#define VSTR_H
+#define RVSTR_H
 #endif
 
 

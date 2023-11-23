@@ -2,6 +2,9 @@
 #include "unity_internals.h"
 #include "vu8.h"
 #include "rvu8.h"
+#include "str.h"
+#include "rvstr.h"
+#include "vstr.h"
 
 void setUp(void) {
     // set stuff up here
@@ -132,12 +135,58 @@ void test_rvu8(void) {
     RUN_TEST(test_rvu8_reverse);
 }
 
+void test_rvstr_basic(void) {
+    RVStr rvs = {0};
+    size_t n = 10000;
+    //size_t reserved = 0;
+    for(size_t i = 0; i < n; i++) {
+        Str str = {0};
+        TEST_ASSERT_EQUAL(0, str_fmt(&str, "%u", i));
+        TEST_ASSERT_EQUAL(0, rvstr_push_back(&rvs, &str));
+        //reserved += str_reserved(&str);
+    }
+    rvstr_reverse(&rvs);
+    rvstr_reverse(&rvs);
+    for(size_t i = 0; i < n; i++) {
+        Str *str = rvstr_get_at(&rvs, i);
+        TEST_ASSERT_EQUAL(i, atoi(str->s));
+    }
+    //printf("rvs reserved : %zu+%zu\n", rvstr_reserved(&rvs), reserved);
+    rvstr_free(&rvs);
+}
+
+void test_vstr_basic(void) {
+    VStr vs = {0};
+    size_t n = 10000;
+    for(size_t i = 0; i < n; i++) {
+        Str str = {0};
+        TEST_ASSERT_EQUAL(0, str_fmt(&str, "%u", i));
+        TEST_ASSERT_EQUAL(0, vstr_push_back(&vs, str));
+    }
+    vstr_reverse(&vs);
+    vstr_reverse(&vs);
+    for(size_t i = 0; i < n; i++) {
+        Str str = vstr_get_at(&vs, i);
+        TEST_ASSERT_EQUAL(i, atoi(str.s));
+    }
+    vstr_free(&vs);
+}
+
+void test_rvstr(void) {
+    RUN_TEST(test_rvstr_basic);
+}
+
+void test_vstr(void) {
+    RUN_TEST(test_vstr_basic);
+}
 
 // not needed when using generate_test_runner.rb
 int main(void) {
     UNITY_BEGIN();
     test_vu8();
     test_rvu8();
+    test_vstr();
+    test_rvstr();
     return UNITY_END();
 }
 

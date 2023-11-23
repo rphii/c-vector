@@ -71,7 +71,8 @@ SOFTWARE. */
 
 #ifndef VEC_H
 
-#define VEC_TYPE_FREE(F)    ((void (*)(void *))(F))
+#define VEC_CAST_FREE(X)        ((void *)(X))
+#define VEC_TYPE_FREE(F,X,T)    ((void (*)(T *))(F))(VEC_CAST_FREE(X))
 
 typedef enum
 {
@@ -124,13 +125,13 @@ typedef enum
     int A##_shrink(N *vec); \
     void A##_pop_front(N *vec, T *val); \
     void A##_pop_back(N *vec, T *val); \
-    void A##_set_at(N *vec, ssize_t index, VEC_ITEM(T, M) val); \
+    void A##_set_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
     void A##_swap(N *vec, size_t i1, size_t i2); \
     void A##_reverse(N *vec); \
-    int A##_insert_at(N *vec, ssize_t index, VEC_ITEM(T, M) val); \
+    int A##_insert_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
     int A##_push_front(N *vec, VEC_ITEM(T, M) val); \
     int A##_push_back(N *vec, VEC_ITEM(T, M) val); \
-    VEC_ITEM(T, M) A##_get_at(N *vec, ssize_t index); \
+    VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
     VEC_ITEM(T, M) A##_get_front(N *vec); \
     VEC_ITEM(T, M) A##_get_back(N *vec); \
     VEC_ITEM(T, M)*A##_iter_begin(N *vec); \
@@ -222,7 +223,7 @@ typedef enum
  * @return zero if success, non-zero if failure
  */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_BACK(N, A, T, F) \
-    static int A##_static_shrink_back(N *vec) \
+    static inline int A##_static_shrink_back(N *vec) \
     { \
         assert(vec); \
         size_t cap = vec->cap; \
@@ -233,7 +234,7 @@ typedef enum
         if(required  < vec->cap) { \
             if(F != 0) { \
                 for(size_t i = required; i < cap; i++) { \
-                    VEC_TYPE_FREE(F)(&vec->VEC_STRUCT_ITEMS[i]); \
+                    VEC_TYPE_FREE(F, &vec->VEC_STRUCT_ITEMS[i], T); \
                 } \
             } \
             void *temp = vec_realloc(vec->VEC_STRUCT_ITEMS, sizeof(*vec->VEC_STRUCT_ITEMS) * required); \
@@ -250,7 +251,7 @@ typedef enum
  * @return zero if success, non-zero if failure
  */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_FRONT(N, A, T, F) \
-    static void A##_static_shrink_front(N *vec) \
+    static inline void A##_static_shrink_front(N *vec) \
     { \
         assert(vec); \
         size_t first = vec->first; \
@@ -259,7 +260,7 @@ typedef enum
             T *item = A##_static_get(vec, 0); \
             if(F != 0) { \
                 for(size_t i = 0; i < first; i++) { \
-                    VEC_TYPE_FREE(F)(&vec->VEC_STRUCT_ITEMS[i]); \
+                    VEC_TYPE_FREE(F, &vec->VEC_STRUCT_ITEMS[i], T); \
                 } \
             } \
             vec_memmove(item, item + first, sizeof(T) * (vec->last - first)); \
@@ -287,7 +288,7 @@ typedef enum
         if(required < vec->cap) { \
             for(size_t i = required; i < cap; i++) { \
                 if(F != 0) { \
-                    VEC_TYPE_FREE(F)(vec->VEC_STRUCT_ITEMS[i]); \
+                    VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
                 } \
                 free(vec->VEC_STRUCT_ITEMS[i]); \
             } \
@@ -314,7 +315,7 @@ typedef enum
             T **item = A##_static_get(vec, 0); \
             if(F != 0) { \
                 for(size_t i = 0; i < first; i++) { \
-                    VEC_TYPE_FREE(F)(vec->VEC_STRUCT_ITEMS[i]); \
+                    VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
                 } \
             } \
             T **residuals = malloc(sizeof(T *) * first); \
@@ -339,7 +340,7 @@ typedef enum
  * @return void
  */
 #define VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F) \
-    static void A##_static_zero(N *vec) \
+    static inline void A##_static_zero(N *vec) \
     { \
         assert(vec); \
         vec_memset(vec, 0, sizeof(*vec)); \
@@ -497,7 +498,7 @@ typedef enum
  * @return item (by value) at index
  */
 #define VEC_IMPLEMENT_COMMON_GET_AT(N, A, T, F, M) \
-    inline VEC_ITEM(T, M) A##_get_at(N *vec, ssize_t index) \
+    inline VEC_ITEM(T, M) A##_get_at(N *vec, size_t index) \
     { \
         assert(vec); \
         return *A##_static_get(vec, index + vec->first); \
@@ -535,12 +536,12 @@ typedef enum
  * @return void
  */
 #define VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M) \
-    void A##_set_at(N *vec, ssize_t index, VEC_ITEM(T, M) val) \
+    inline void A##_set_at(N *vec, size_t index, VEC_ITEM(T, M) val) \
     { \
         assert(vec); \
         VEC_ASSERT(val, M); \
         T *item = VEC_REF(M) *A##_static_get(vec, index + vec->first); \
-        if(F != 0) VEC_TYPE_FREE(F)(item); \
+        if(F != 0) VEC_TYPE_FREE(F, item, T); \
         vec_memcpy(item, VEC_REF(M) val, sizeof(T)); \
     }
 
@@ -552,7 +553,7 @@ typedef enum
  * @return zero if success, non-zero if failure
  */
 #define VEC_IMPLEMENT_COMMON_INSERT_AT(N, A, T, F, M) \
-    int A##_insert_at(N *vec, ssize_t index, VEC_ITEM(T, M) val) \
+    inline int A##_insert_at(N *vec, size_t index, VEC_ITEM(T, M) val) \
     { \
         assert(vec); \
         VEC_ASSERT(val, M); \
@@ -612,7 +613,7 @@ typedef enum
  * @return void
  */
 #define VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M) \
-    void A##_swap(N *vec, size_t i1, size_t i2) \
+    inline void A##_swap(N *vec, size_t i1, size_t i2) \
     { \
         assert(vec); \
         VEC_ITEM(T, M) *v1 = A##_static_get(vec, i1 + vec->first); \
@@ -629,7 +630,7 @@ typedef enum
  * @return void
  */
 #define VEC_IMPLEMENT_COMMON_REVERSE(N, A, T, F) \
-    void A##_reverse(N *vec) \
+    inline void A##_reverse(N *vec) \
     { \
         assert(vec); \
         size_t len = A##_length(vec); \
@@ -652,7 +653,7 @@ typedef enum
         assert(vec); \
         if(F != 0) { \
             for(size_t i = 0; i < vec->cap; i++) { \
-                VEC_TYPE_FREE(F)(&vec->VEC_STRUCT_ITEMS[i]); \
+                VEC_TYPE_FREE(F, &vec->VEC_STRUCT_ITEMS[i], T); \
             } \
         } \
         free(vec->VEC_STRUCT_ITEMS); \
@@ -668,7 +669,7 @@ typedef enum
     inline void A##_zero(N *vec) \
     { \
         assert(vec); \
-        vec_memset(vec->VEC_STRUCT_ITEMS, 0, sizeof(*vec->VEC_STRUCT_ITEMS) * vec->cap); \
+        vec_memset(vec, 0, sizeof(*vec)); \
     }
 
 /**
@@ -745,7 +746,7 @@ typedef enum
         assert(vec); \
         for(size_t i = 0; i < vec->cap; i++) { \
             if(F != 0) { \
-                VEC_TYPE_FREE(F)(vec->VEC_STRUCT_ITEMS[i]); \
+                VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
             } \
             free(vec->VEC_STRUCT_ITEMS[i]); \
         } \
@@ -762,9 +763,10 @@ typedef enum
     inline void A##_zero(N *vec) \
     { \
         assert(vec); \
-        for(size_t i = 0; i < vec->cap; i++) { \
+        vec_memset(vec, 0, sizeof(*vec)); \
+        /*for(size_t i = 0; i < vec->cap; i++) { \
             vec_memset(&vec->VEC_STRUCT_ITEMS[i], 0, sizeof(*vec->VEC_STRUCT_ITEMS)); \
-        } \
+        }*/ \
     }
 
 /**
