@@ -78,9 +78,9 @@ The `A##` means the `A` specified in the two macros.
 - `A##_reserve` reserve more memory in items
 - `A##_shrink` shrinks vector to minimal possible capacity
 - `A##_set_at` overwrite item at index, free any previous item
-- `A##_insert_at` insert item after index
 - `A##_push_front` insert item in the front
 - `A##_push_back` insert item at the back
+- `A##_push_at` insert item after index
 - `A##_pop_front` pop item in the front
 - `A##_pop_back` pop item at the back
 - `A##_get_at` get item at index
@@ -116,5 +116,11 @@ recommend the following:
 - if we pushed from the front, then N.first can actually be reduced, instead of moving everything
   one back!
 - bundle the snippets I copied around used for freeing into it's own function
-- consider removing `N.first` and anything relating to it... in order to reduce compile time...?
+- comparing stuff requiring a comparing function: cmp, find, match, rfind, rmatch, invert
+- cat, back/at/front, pop_at, pop_slice, apply
+- PUSH, POP, SET, GET 
+  - front -> item
+  - back -> item
+  - at -> item, index
+  - slice -> slice, from, until
 

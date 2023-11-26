@@ -123,17 +123,36 @@ typedef enum
     int A##_empty(N *vec); \
     int A##_resize(N *vec, size_t cap); \
     int A##_shrink(N *vec); \
-    void A##_pop_front(N *vec, T *val); \
-    void A##_pop_back(N *vec, T *val); \
-    void A##_set_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
-    void A##_swap(N *vec, size_t i1, size_t i2); \
-    void A##_reverse(N *vec); \
-    int A##_insert_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
+    /* single item operations */ \
     int A##_push_front(N *vec, VEC_ITEM(T, M) val); \
     int A##_push_back(N *vec, VEC_ITEM(T, M) val); \
-    VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
+    int A##_push_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
+    /* TODO */ void A##_set_front(N *vec, VEC_ITEM(T, M) val); \
+    /* TODO */ void A##_set_back(N *vec, VEC_ITEM(T, M) val); \
+    void A##_set_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
+    void A##_pop_front(N *vec, T *val); \
+    void A##_pop_back(N *vec, T *val); \
+    /* TODO */ void A##_pop_at(N *vec, size_t index, T *val); \
     VEC_ITEM(T, M) A##_get_front(N *vec); \
     VEC_ITEM(T, M) A##_get_back(N *vec); \
+    VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
+    /* slice operations */ \
+    /* TODO */ int A##_extend_front(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_extend_back(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_extend_at(N *vec, size_t index, N *v2, size_t n); \
+    /* TODO */ void A##_paste_front(N *vec, N *v2, size_t n); \
+    /* TODO */ void A##_paste_back(N *vec, N *v2, size_t n); \
+    /* TODO */ void A##_paste_at(N *vec, size_t index, N *v2, size_t n); \
+    /* TODO */ int A##_cut_front(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_cut_back(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_cut_at(N *vec, size_t from, size_t until, N *v2); \
+    /* TODO */ int A##_cat_front(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_cat_back(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_cat_at(N *vec, size_t from, size_t until, N *v2); \
+    /* miscellaneous operations */ \
+    void A##_swap(N *vec, size_t i1, size_t i2); \
+    void A##_reverse(N *vec); \
+    /* TODO */ void A##_reverse_slice(N *vec, size_t from, size_t until); \
     VEC_ITEM(T, M)*A##_iter_begin(N *vec); \
     VEC_ITEM(T, M)*A##_iter_end(N *vec); \
     /* split implementation */ \
@@ -177,7 +196,7 @@ typedef enum
     VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M);         \
     VEC_IMPLEMENT_COMMON_PUSH_FRONT(N, A, T, F, M);     \
     VEC_IMPLEMENT_COMMON_PUSH_BACK(N, A, T, F, M);      \
-    VEC_IMPLEMENT_COMMON_INSERT_AT(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M);      \
     VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M);      \
     VEC_IMPLEMENT_COMMON_REVERSE(N, A, T, F);       \
     VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
@@ -546,14 +565,14 @@ typedef enum
     }
 
 /**
- * @brief A##_insert_at [COMMON] - add one item at index and move everything back
+ * @brief A##_push_at [COMMON] - add one item at index and move everything back
  * @param vec - the vector
  * @param index - the index
  * @param val - the value (by reference) to be written to said index
  * @return zero if success, non-zero if failure
  */
-#define VEC_IMPLEMENT_COMMON_INSERT_AT(N, A, T, F, M) \
-    inline int A##_insert_at(N *vec, size_t index, VEC_ITEM(T, M) val) \
+#define VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M) \
+    inline int A##_push_at(N *vec, size_t index, VEC_ITEM(T, M) val) \
     { \
         assert(vec); \
         VEC_ASSERT(val, M); \
