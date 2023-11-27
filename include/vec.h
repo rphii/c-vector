@@ -132,7 +132,7 @@ typedef enum
     void A##_set_at(N *vec, size_t index, VEC_ITEM(T, M) val); \
     void A##_pop_front(N *vec, T *val); \
     void A##_pop_back(N *vec, T *val); \
-    /* TODO */ void A##_pop_at(N *vec, size_t index, T *val); \
+    void A##_pop_at(N *vec, size_t index, T *val); \
     VEC_ITEM(T, M) A##_get_front(N *vec); \
     VEC_ITEM(T, M) A##_get_back(N *vec); \
     VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
@@ -176,7 +176,7 @@ typedef enum
     /* private */ \
     /*VEC_IMPLEMENT_COMMON_STATIC_F(N, A, T, F);              */\
     VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F);           \
-    VEC_IMPLEMENT_COMMON_STATIC_GET(N, A, T, F, M);             \
+    VEC_IMPLEMENT_COMMON_STATIC_GET(N, A, T, F, M);         \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_FRONT(N, A, T, F);    \
     /* public */ \
@@ -188,16 +188,17 @@ typedef enum
     VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);        \
     VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M); \
     VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);   \
-    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F, M);      \
-    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F, M);       \
-    VEC_IMPLEMENT_COMMON_GET_AT(N, A, T, F, M);         \
-    VEC_IMPLEMENT_COMMON_GET_FRONT(N, A, T, F, M);      \
-    VEC_IMPLEMENT_COMMON_GET_BACK(N, A, T, F, M);       \
-    VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M);         \
-    VEC_IMPLEMENT_COMMON_PUSH_FRONT(N, A, T, F, M);     \
-    VEC_IMPLEMENT_COMMON_PUSH_BACK(N, A, T, F, M);      \
-    VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M);      \
-    VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F, M);  \
+    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F, M);   \
+    VEC_IMPLEMENT_COMMON_POP_AT(N, A, T, F, M);     \
+    VEC_IMPLEMENT_COMMON_GET_AT(N, A, T, F, M);     \
+    VEC_IMPLEMENT_COMMON_GET_FRONT(N, A, T, F, M);  \
+    VEC_IMPLEMENT_COMMON_GET_BACK(N, A, T, F, M);   \
+    VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M);     \
+    VEC_IMPLEMENT_COMMON_PUSH_FRONT(N, A, T, F, M); \
+    VEC_IMPLEMENT_COMMON_PUSH_BACK(N, A, T, F, M);  \
+    VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M);    \
+    VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M);       \
     VEC_IMPLEMENT_COMMON_REVERSE(N, A, T, F);       \
     VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
     VEC_IMPLEMENT_##M##_ZERO(N, A, T, F);           \
@@ -565,6 +566,27 @@ typedef enum
     }
 
 /**
+ * @brief A##_pop_at [COMMON] - pop one item from the back (and adjust length)
+ * @param vec - the vector
+ * @param index - the index
+ * @param val - write back for popped value, pass 0 to ignore
+ * @return void
+ */
+#define VEC_IMPLEMENT_COMMON_POP_AT(N, A, T, F, M) \
+    inline void A##_pop_at(N *vec, size_t index, T *val) \
+    { \
+        assert(vec); \
+        VEC_ASSERT(val, M); \
+        VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
+        if(val) { \
+            vec_memcpy(val, VEC_REF(M) *item, sizeof(T)); \
+        } \
+        vec_memmove(item, item + 1, sizeof(*item) * (vec->last - index + vec->first)); \
+        vec->last--; \
+        return; \
+    }
+
+/**
  * @brief A##_push_at [COMMON] - add one item at index and move everything back
  * @param vec - the vector
  * @param index - the index
@@ -580,7 +602,7 @@ typedef enum
         if(result) return result; \
         vec->last++; \
         VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
-        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index - 1)); \
+        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index + vec->first + 1)); \
         vec_memcpy(VEC_REF(M) *item, VEC_REF(M) val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
