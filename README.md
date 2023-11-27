@@ -118,9 +118,4 @@ recommend the following:
 - bundle the snippets I copied around used for freeing into it's own function
 - comparing stuff requiring a comparing function: cmp, find, match, rfind, rmatch, invert
 - cat, back/at/front, pop_at, pop_slice, apply
-- PUSH, POP, SET, GET 
-  - front -> item
-  - back -> item
-  - at -> item, index
-  - slice -> slice, from, until
 
