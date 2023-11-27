@@ -60,7 +60,7 @@ void test_vu8_push_front(void) {
     TEST_ASSERT_EQUAL(0, vu8_reserved(&v));
 }
 
-void test_vu8_insert_at(void) {
+void test_vu8_push_at(void) {
     Vu8 seq = {0};
     Vu8 v = {0};
     TEST_ASSERT_EQUAL(0, vu8_length(&seq));
@@ -68,7 +68,7 @@ void test_vu8_insert_at(void) {
     TEST_ASSERT_EQUAL(0, vu8_length(&v));
     TEST_ASSERT_EQUAL(0, vu8_reserved(&v));
 
-    vu8_insert_at(&v, 0, 70);
+    vu8_push_at(&v, 0, 70);
     TEST_ASSERT_EQUAL(1, vu8_length(&v));
 
     vu8_push_back(&v, 10);
@@ -76,8 +76,8 @@ void test_vu8_insert_at(void) {
     vu8_push_back(&v, 30);
     TEST_ASSERT_EQUAL(4, vu8_length(&v));
 
-    vu8_insert_at(&v, 0, 40);
-    vu8_insert_at(&v, 2, 50);
+    vu8_push_at(&v, 0, 40);
+    vu8_push_at(&v, 2, 50);
     TEST_ASSERT_EQUAL(6, vu8_length(&v));
 
     TEST_ASSERT_EQUAL(40, vu8_get_at(&v, 0));
@@ -112,7 +112,7 @@ void test_vu8(void) {
     RUN_TEST(test_vu8_stack_lifetime);
     RUN_TEST(test_vu8_push_back);
     RUN_TEST(test_vu8_push_front);
-    RUN_TEST(test_vu8_insert_at);
+    RUN_TEST(test_vu8_push_at);
     RUN_TEST(test_vu8_reverse);
 }
 
@@ -140,6 +140,7 @@ void test_rvstr_basic(void) {
     for(size_t i = 0; i < n; i++) {
         Str str = {0};
         TEST_ASSERT_EQUAL(0, str_fmt(&str, "%u", i));
+        str_reverse(&str);
         TEST_ASSERT_EQUAL(0, rvstr_push_back(&rvs, &str));
         //reserved += str_reserved(&str);
     }
@@ -147,7 +148,11 @@ void test_rvstr_basic(void) {
     rvstr_reverse(&rvs);
     for(size_t i = 0; i < n; i++) {
         Str *str = rvstr_get_at(&rvs, i);
+        str_reverse(str);
         TEST_ASSERT_EQUAL(i, atoi(str->s));
+        /* change is reflected within the original vector */
+        Str *str2 = rvstr_get_at(&rvs, i);
+        TEST_ASSERT_EQUAL(i, atoi(str2->s));
     }
     //printf("rvs reserved : %zu+%zu\n", rvstr_reserved(&rvs), reserved);
     rvstr_free(&rvs);
@@ -159,13 +164,18 @@ void test_vstr_basic(void) {
     for(size_t i = 0; i < n; i++) {
         Str str = {0};
         TEST_ASSERT_EQUAL(0, str_fmt(&str, "%u", i));
+        str_reverse(&str);
         TEST_ASSERT_EQUAL(0, vstr_push_back(&vs, str));
     }
     vstr_reverse(&vs);
     vstr_reverse(&vs);
     for(size_t i = 0; i < n; i++) {
         Str str = vstr_get_at(&vs, i);
+        str_reverse(&str);
         TEST_ASSERT_EQUAL(i, atoi(str.s));
+        /* change is reflected within the original vector */
+        Str str2 = vstr_get_at(&vs, i);
+        TEST_ASSERT_EQUAL(i, atoi(str2.s));
     }
     vstr_free(&vs);
 }
