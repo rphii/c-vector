@@ -71,6 +71,11 @@ void test_vu8_push_at(void) {
     vu8_push_at(&v, 0, 70);
     TEST_ASSERT_EQUAL(1, vu8_length(&v));
 
+    vu8_push_front(&v, 100);
+    vu8_push_front(&v, 100);
+    vu8_pop_front(&v, 0);
+    vu8_pop_front(&v, 0);
+
     vu8_push_back(&v, 10);
     vu8_push_back(&v, 20);
     vu8_push_back(&v, 30);
@@ -95,6 +100,47 @@ void test_vu8_push_at(void) {
     TEST_ASSERT_EQUAL(0, vu8_reserved(&v));
 }
 
+void test_vu8_pop_at(void) {
+    uint8_t val = 0;
+    Vu8 v = {0};
+    vu8_push_back(&v, 10);
+    vu8_push_back(&v, 20);
+    vu8_push_back(&v, 30);
+    vu8_push_back(&v, 40);
+    vu8_push_back(&v, 50);
+    TEST_ASSERT_EQUAL(5, vu8_length(&v));
+
+    vu8_pop_at(&v, 1, &val);
+    TEST_ASSERT_EQUAL(4, vu8_length(&v));
+    TEST_ASSERT_EQUAL(20, val);
+
+    vu8_push_at(&v, 1, val);
+    TEST_ASSERT_EQUAL(5, vu8_length(&v));
+
+    vu8_pop_front(&v, &val);
+    TEST_ASSERT_EQUAL(1, v.first);
+    TEST_ASSERT_EQUAL(4, vu8_length(&v));
+    TEST_ASSERT_EQUAL(10, val);
+
+    vu8_pop_at(&v, 1, &val);
+    TEST_ASSERT_EQUAL(3, vu8_length(&v));
+    TEST_ASSERT_EQUAL(30, val);
+
+    vu8_pop_at(&v, 2, &val);
+    TEST_ASSERT_EQUAL(2, vu8_length(&v));
+    TEST_ASSERT_EQUAL(50, val);
+
+    vu8_pop_at(&v, 0, &val);
+    TEST_ASSERT_EQUAL(1, vu8_length(&v));
+    TEST_ASSERT_EQUAL(20, val);
+
+    vu8_pop_at(&v, 0, &val);
+    TEST_ASSERT_EQUAL(0, vu8_length(&v));
+    TEST_ASSERT_EQUAL(40, val);
+
+    vu8_free(&v);
+}
+
 void test_vu8_reverse(void)
 {
     Vu8 v = {0};
@@ -113,6 +159,7 @@ void test_vu8(void) {
     RUN_TEST(test_vu8_push_back);
     RUN_TEST(test_vu8_push_front);
     RUN_TEST(test_vu8_push_at);
+    RUN_TEST(test_vu8_pop_at);
     RUN_TEST(test_vu8_reverse);
 }
 

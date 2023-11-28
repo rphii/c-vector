@@ -581,8 +581,8 @@ typedef enum
         if(val) { \
             vec_memcpy(val, VEC_REF(M) *item, sizeof(T)); \
         } \
-        vec_memmove(item, item + 1, sizeof(*item) * (vec->last - index + vec->first)); \
         vec->last--; \
+        vec_memmove(item, item + 1, sizeof(*item) * (vec->last - index + vec->first)); \
         return; \
     }
 
@@ -602,7 +602,7 @@ typedef enum
         if(result) return result; \
         vec->last++; \
         VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
-        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index + vec->first + 1)); \
+        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index + vec->first)); \
         vec_memcpy(VEC_REF(M) *item, VEC_REF(M) val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
