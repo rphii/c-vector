@@ -96,6 +96,10 @@ typedef enum
 #define VEC_ASSERT_BY_VAL(x)
 #define VEC_ASSERT(x, M)        VEC_ASSERT_##M(x)
 
+#define VEC_IS_BY_REF_BY_REF 1
+#define VEC_IS_BY_REF_BY_VAL 0
+#define VEC_IS_BY_REF(M)     VEC_IS_BY_REF_##M
+
 #define VEC_H
 #endif
 
@@ -137,22 +141,22 @@ typedef enum
     VEC_ITEM(T, M) A##_get_back(N *vec); \
     VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
     /* slice operations */ \
-    /* TODO */ int A##_extend_front(N *vec, N *v2, size_t n); \
+    int A##_extend_front(N *vec, N *v2, size_t n); \
     /* TODO */ int A##_extend_back(N *vec, N *v2, size_t n); \
     /* TODO */ int A##_extend_at(N *vec, size_t index, N *v2, size_t n); \
-    /* TODO */ void A##_paste_front(N *vec, N *v2, size_t n); \
-    /* TODO */ void A##_paste_back(N *vec, N *v2, size_t n); \
-    /* TODO */ void A##_paste_at(N *vec, size_t index, N *v2, size_t n); \
+    /* TODO */ int A##_paste_front(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_paste_back(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_paste_at(N *vec, size_t index, N *v2, size_t n); \
     /* TODO */ int A##_cut_front(N *vec, N *v2, size_t n); \
     /* TODO */ int A##_cut_back(N *vec, N *v2, size_t n); \
-    /* TODO */ int A##_cut_at(N *vec, size_t from, size_t until, N *v2); \
+    /* TODO */ int A##_cut_at(N *vec, size_t from, size_t n, N *v2); \
     /* TODO */ int A##_cat_front(N *vec, N *v2, size_t n); \
     /* TODO */ int A##_cat_back(N *vec, N *v2, size_t n); \
-    /* TODO */ int A##_cat_at(N *vec, size_t from, size_t until, N *v2); \
+    /* TODO */ int A##_cat_at(N *vec, size_t from, size_t n, N *v2); \
     /* miscellaneous operations */ \
     void A##_swap(N *vec, size_t i1, size_t i2); \
     void A##_reverse(N *vec); \
-    /* TODO */ void A##_reverse_slice(N *vec, size_t from, size_t until); \
+    /* TODO */ void A##_reverse_slice(N *vec, size_t from, size_t n); \
     VEC_ITEM(T, M)*A##_iter_begin(N *vec); \
     VEC_ITEM(T, M)*A##_iter_end(N *vec); \
     /* split implementation */ \
@@ -180,31 +184,45 @@ typedef enum
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_BACK(N, A, T, F);     \
     VEC_IMPLEMENT_##M##_STATIC_SHRINK_FRONT(N, A, T, F);    \
     /* public */ \
-    VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F);         \
-    VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);        \
-    VEC_IMPLEMENT_COMMON_CAPACITY(N, A, T, F);      \
-    VEC_IMPLEMENT_COMMON_EMPTY(N, A, T, F);         \
-    VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);        \
-    VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);        \
-    VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M); \
-    VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);   \
-    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F, M);  \
-    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F, M);   \
-    VEC_IMPLEMENT_COMMON_POP_AT(N, A, T, F, M);     \
-    VEC_IMPLEMENT_COMMON_GET_AT(N, A, T, F, M);     \
-    VEC_IMPLEMENT_COMMON_GET_FRONT(N, A, T, F, M);  \
-    VEC_IMPLEMENT_COMMON_GET_BACK(N, A, T, F, M);   \
-    VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M);     \
-    VEC_IMPLEMENT_COMMON_PUSH_FRONT(N, A, T, F, M); \
-    VEC_IMPLEMENT_COMMON_PUSH_BACK(N, A, T, F, M);  \
-    VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M);    \
-    VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M);       \
-    VEC_IMPLEMENT_COMMON_REVERSE(N, A, T, F);       \
-    VEC_IMPLEMENT_##M##_FREE(N, A, T, F);           \
-    VEC_IMPLEMENT_##M##_ZERO(N, A, T, F);           \
-    VEC_IMPLEMENT_##M##_RESERVED(N, A, T, F);       \
-    VEC_IMPLEMENT_##M##_RESERVE(N, A, T, F);        \
-    VEC_IMPLEMENT_##M##_COPY(N, A, T, F);           \
+    VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F);             \
+    VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F);            \
+    VEC_IMPLEMENT_COMMON_CAPACITY(N, A, T, F);          \
+    VEC_IMPLEMENT_COMMON_EMPTY(N, A, T, F);             \
+    VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F);            \
+    VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);            \
+    VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M);     \
+    VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_POP_AT(N, A, T, F, M);         \
+    VEC_IMPLEMENT_COMMON_GET_AT(N, A, T, F, M);         \
+    VEC_IMPLEMENT_COMMON_GET_FRONT(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_GET_BACK(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M);         \
+    VEC_IMPLEMENT_COMMON_PUSH_FRONT(N, A, T, F, M);     \
+    VEC_IMPLEMENT_COMMON_PUSH_BACK(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M);        \
+    /* slice */ \
+    VEC_IMPLEMENT_COMMON_EXTEND_FRONT(N, A, T, F, M);   \
+    VEC_IMPLEMENT_COMMON_EXTEND_BACK(N, A, T, F, M);    \
+    VEC_IMPLEMENT_COMMON_EXTEND_AT(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_CUT_FRONT(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_CUT_BACK(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_CUT_AT(N, A, T, F, M);         \
+    VEC_IMPLEMENT_COMMON_PASTE_FRONT(N, A, T, F, M);    \
+    VEC_IMPLEMENT_COMMON_PASTE_BACK(N, A, T, F, M);     \
+    VEC_IMPLEMENT_COMMON_PASTE_AT(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_CAT_FRONT(N, A, T, F, M);      \
+    VEC_IMPLEMENT_COMMON_CAT_BACK(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_CAT_AT(N, A, T, F, M);         \
+    /* rest */ \
+    VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M);           \
+    VEC_IMPLEMENT_COMMON_REVERSE(N, A, T, F);           \
+    VEC_IMPLEMENT_##M##_FREE(N, A, T, F);               \
+    VEC_IMPLEMENT_##M##_ZERO(N, A, T, F);               \
+    VEC_IMPLEMENT_##M##_RESERVED(N, A, T, F);           \
+    VEC_IMPLEMENT_##M##_RESERVE(N, A, T, F);            \
+    VEC_IMPLEMENT_##M##_COPY(N, A, T, F);               \
 
 /**********************************************************/
 /* PRIVATE FUNCTION IMPLEMENTATIONS ***********************/
@@ -271,7 +289,7 @@ typedef enum
  * @return zero if success, non-zero if failure
  */
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_FRONT(N, A, T, F) \
-    static inline void A##_static_shrink_front(N *vec) \
+    static inline int A##_static_shrink_front(N *vec) \
     { \
         assert(vec); \
         size_t first = vec->first; \
@@ -287,6 +305,7 @@ typedef enum
             /* TODO: is that really needed? */ vec_memset(item + vec->last - first, 0, sizeof(T) * (first)); \
             vec->last -= first; \
         } \
+        return 0; \
     }
 
 /* implementation by ref */
@@ -326,7 +345,7 @@ typedef enum
  * @return zero if success, non-zero if failure
  */
 #define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_FRONT(N, A, T, F) \
-    static inline void A##_static_shrink_front(N *vec) \
+    static inline int A##_static_shrink_front(N *vec) \
     { \
         assert(vec); \
         size_t first = vec->first; \
@@ -338,13 +357,16 @@ typedef enum
                     VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
                 } \
             } \
+            /* we have to preserve all items, since they're alloced */ \
             T **residuals = malloc(sizeof(T *) * first); \
+            if(!residuals) return VEC_ERROR_MALLOC; \
             vec_memcpy(residuals, item, sizeof(T *) * (first)); \
             vec_memmove(item, item + first, sizeof(T *) * (vec->last - first)); \
             vec_memcpy(item + vec->last - first, residuals, sizeof(T *) * (first)); \
             free(residuals); \
             vec->last -= first; \
         } \
+        return 0; \
     }
 
 
@@ -442,8 +464,8 @@ typedef enum
     inline int A##_shrink(N *vec) \
     { \
         assert(vec); \
-        A##_static_shrink_front(vec); \
-        int result = A##_static_shrink_back(vec); \
+        int result = A##_static_shrink_front(vec); \
+        result |= A##_static_shrink_back(vec); \
         return result; \
     }
 
@@ -582,7 +604,7 @@ typedef enum
             vec_memcpy(val, VEC_REF(M) *item, sizeof(T)); \
         } \
         vec->last--; \
-        vec_memmove(item, item + 1, sizeof(*item) * (vec->last - index + vec->first)); \
+        vec_memmove(item, item + 1, sizeof(*item) * (vec->last - index - vec->first)); \
         return; \
     }
 
@@ -602,7 +624,7 @@ typedef enum
         if(result) return result; \
         vec->last++; \
         VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
-        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index + vec->first)); \
+        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index - vec->first + 1)); \
         vec_memcpy(VEC_REF(M) *item, VEC_REF(M) val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
@@ -642,6 +664,7 @@ typedef enum
         if(result) return result; \
         size_t back = vec->last++; \
         T *item = VEC_REF(M) *A##_static_get(vec, back); \
+        if(F != 0) VEC_TYPE_FREE(F, item, T); /* required (?) in case we pop back (but don't free (?)) and then push back again */ \
         vec_memcpy(item, VEC_REF(M) val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }
@@ -874,6 +897,198 @@ typedef enum
         } \
         return result; \
     }
+
+#define VEC_IMPLEMENT_COMMON_EXTEND_FRONT(N, A, T, F, M) \
+    int A##_extend_front(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(v2) ? n : A##_length(v2); \
+        size_t require = vec->last + A##_length(v2); \
+        int result = A##_reserve(vec, require); \
+        if(result) return result; \
+        vec->last += until; \
+        VEC_ITEM(T, M) *item = A##_static_get(vec, vec->first); \
+        vec_memmove(item + until, item, sizeof(*item) * (vec->last - until - vec->first)); \
+        /* TODO dangerous! memmove will not zero out the original memory bytes !!! */ \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) value = A##_get_at(v2, i); \
+            A##_set_at(vec, i, value); \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_EXTEND_BACK(N, A, T, F, M) \
+    int A##_extend_back(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(v2) ? n : A##_length(v2); \
+        size_t require = vec->last + A##_length(v2); \
+        size_t from = require < A##_length(vec) ? A##_length(vec) - require : 0; \
+        int result = A##_reserve(vec, require); \
+        if(result) return result; \
+        vec->last += until; \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) value = A##_get_at(v2, i); \
+            A##_set_at(vec, from + i, value); \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_EXTEND_AT(N, A, T, F, M) \
+    int A##_extend_at(N *vec, size_t index, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(v2) ? n : A##_length(v2); \
+        size_t require = vec->last + A##_length(v2); \
+        int result = A##_reserve(vec, require); \
+        if(result) return result; \
+        vec->last += until; \
+        VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
+        vec_memmove(item + until, item, sizeof(*item) * (vec->last - index - until - vec->first)); \
+        /* TODO dangerous! memmove will not zero out the original memory bytes !!! */ \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) value = A##_get_at(v2, i); \
+            A##_set_at(vec, index + i, value); \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_CUT_FRONT(N, A, T, F, M) \
+    int A##_cut_front(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(vec) ? n : A##_length(vec); \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) *value = A##_static_get(vec, vec->first + i); \
+            int result = A##_push_back(v2, *value); \
+            if(result) return result; \
+        } \
+        vec->first += until; \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_CUT_BACK(N, A, T, F, M) \
+    int A##_cut_back(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t from = n < A##_length(vec) ? A##_length(vec) - n : 0; \
+        size_t until = n < A##_length(vec) ? n : A##_length(vec); \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) *value = A##_static_get(vec, vec->first + i + from); /* optimization of this could also be interesting */ \
+            int result = A##_push_back(v2, *value); \
+            if(result) return result; \
+        } \
+        vec->last -= until; \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_CUT_AT(N, A, T, F, M) \
+    int A##_cut_at(N *vec, size_t from, size_t n, N *v2) { \
+    }
+
+#if 0
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(vec) ? n : A##_length(vec); \
+        VEC_ITEM(T, M) *item = A##_static_get(vec, from + vec->first); \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) value = A##_get_at(vec, from + i); \
+            int result = A##_push_back(v2, value); \
+            if(result) return result; \
+        } \
+        if(VEC_IS_BY_REF(M) || F != 0) /* TODO actually confirm how this is optimized in higher levels of optimization */ { \
+            /* similar to shrink front, we have to preserve all items, since they're alloced */ \
+            /* TODO however, we don't want to keep any item data! we NEED to 0 it out, because v2' free will otherwise cause a dual free, in combination with vec's free... */ \
+            VEC_ITEM(T, M) *residuals = malloc(sizeof(*residuals) * until); \
+            if(!residuals) return VEC_ERROR_MALLOC; \ vec_memcpy(residuals, item, sizeof(*residuals) * until); \
+            vec_memmove(item, item + until, sizeof(*item) * (vec->last - from)); \
+            vec_memcpy(item + vec->last - until, residuals, sizeof(*residuals) * until); \
+        } else { \
+            vec_memmove(item, item + until, sizeof(*item) * (vec->last - from)); \
+        } \
+        vec->last -= until; \
+        return VEC_ERROR_NONE; \
+    }
+#endif
+
+#define VEC_IMPLEMENT_COMMON_PASTE_FRONT(N, A, T, F, M) \
+    int A##_paste_front(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(v2) ? n : A##_length(v2); \
+        size_t require = until < A##_length(vec) ? until : A##_length(vec); \
+        size_t from = A##_length(vec); \
+        int result = A##_reserve(vec, require); \
+        if(result) return result; \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) value = A##_get_at(v2, i); \
+            A##_set_at(vec, i, value); \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_PASTE_BACK(N, A, T, F, M) \
+    int A##_paste_back(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(v2) ? n : A##_length(v2); \
+        size_t require = until < A##_length(vec) ? until : A##_length(vec); \
+        size_t from = until < A##_length(vec) ? A##_length(vec) - until : 0; \
+        int result = A##_reserve(vec, require); \
+        if(result) return result; \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) value = A##_get_at(v2, i); \
+            A##_set_at(vec, from + i, value); \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_PASTE_AT(N, A, T, F, M) \
+    int A##_paste_at(N *vec, size_t index, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+    }
+
+#define VEC_IMPLEMENT_COMMON_CAT_FRONT(N, A, T, F, M) \
+    int A##_cat_front(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(vec) ? n : A##_length(vec); \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) *item = A##_static_get(vec, vec->first + i); \
+            int result = A##_push_back(v2, *item); \
+            if(result) return result; \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_CAT_BACK(N, A, T, F, M) \
+    int A##_cat_back(N *vec, N *v2, size_t n) { \
+        assert(vec); \
+        assert(v2); \
+        size_t from = n < A##_length(vec) ? A##_length(vec) - n : 0; \
+        size_t until = n < A##_length(vec) ? n : A##_length(vec); \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) *item = A##_static_get(vec, vec->first + i + from); \
+            int result = A##_push_back(v2, *item); \
+            if(result) return result; \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
+#define VEC_IMPLEMENT_COMMON_CAT_AT(N, A, T, F, M) \
+    int A##_cat_at(N *vec, size_t from, size_t n, N *v2) { \
+        assert(vec); \
+        assert(v2); \
+        size_t until = n < A##_length(vec) ? n : A##_length(vec); \
+        for(size_t i = 0; i < until; i++) { \
+            VEC_ITEM(T, M) *item = A##_static_get(vec, vec->first + i + from); \
+            int result = A##_push_back(v2, *item); \
+            if(result) return result; \
+        } \
+        return VEC_ERROR_NONE; \
+    }
+
 
 //#define VEC_H
 //#endif
