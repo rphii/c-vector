@@ -46,22 +46,21 @@ SOFTWARE. */
 #define vec_memmove memmove
 #endif
 
-#undef VEC_DEFAULT_SIZE
-#undef VEC_STRUCT_ITEMS
-#undef VEC_KEEP_ZERO_END
-
+#undef  VEC_DEFAULT_SIZE
 #ifdef  VEC_SETTINGS_DEFAULT_SIZE
 #define VEC_DEFAULT_SIZE VEC_SETTINGS_DEFAULT_SIZE
 #else
 #define VEC_DEFAULT_SIZE    4
 #endif
 
+#undef  VEC_STRUCT_ITEMS
 #ifdef  VEC_SETTINGS_STRUCT_ITEMS
 #define VEC_STRUCT_ITEMS VEC_SETTINGS_STRUCT_ITEMS
 #else
 #define VEC_STRUCT_ITEMS items
 #endif
 
+#undef  VEC_KEEP_ZERO_END
 #ifdef  VEC_SETTINGS_KEEP_ZERO_END
 #define VEC_KEEP_ZERO_END VEC_SETTINGS_KEEP_ZERO_END
 #else
@@ -624,7 +623,7 @@ typedef enum
         if(result) return result; \
         vec->last++; \
         VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
-        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index - vec->first + 1)); \
+        vec_memmove(item + 1, item, sizeof(*item) * (vec->last - index - vec->first - 1)); \
         vec_memcpy(VEC_REF(M) *item, VEC_REF(M) val, sizeof(T)); \
         return VEC_ERROR_NONE; \
     }

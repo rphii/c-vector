@@ -1,0 +1,13 @@
+
+#define VEC_IMPLEMENT_COMMON_STATIC_GET(N, A, T, F, M) \
+    static inline VEC_ITEM(T, M) *A##_static_get(N *vec, ssize_t index, size_t positive_offset) \
+    { \
+        assert(vec); \
+        index += (ssize_t)((!((size_t)index >> (sizeof(index) * 8 - 1))) * positive_offset); \
+        index += (ssize_t)(  ((size_t)index >> (sizeof(index) * 8 - 1))  * vec->last); \
+        assert(index >= 0) ; \
+        printf("[[[indx:%zu]]]", index); \
+        assert((size_t)index < vec->last); \
+        assert((size_t)index >= vec->first); \
+        return &vec->VEC_STRUCT_ITEMS[(size_t)index]; \
+    }
