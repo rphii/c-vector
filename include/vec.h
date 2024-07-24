@@ -91,7 +91,9 @@ typedef enum
 #define VEC_REF_BY_REF
 #define VEC_REF(M)       VEC_REF_##M
 
-#define VEC_ASSERT_BY_REF(x)    assert(x)
+#define VEC_ASSERT_REAL(x)      assert(x && "assertion failed")
+
+#define VEC_ASSERT_BY_REF(x)    VEC_ASSERT_REAL(x)
 #define VEC_ASSERT_BY_VAL(x)
 #define VEC_ASSERT(x, M)        VEC_ASSERT_##M(x)
 
@@ -121,9 +123,9 @@ typedef enum
     \
     /* common implementation */ \
     void A##_clear(N *vec); \
-    size_t A##_length(N *vec); \
-    size_t A##_capacity(N *vec); \
-    int A##_empty(N *vec); \
+    size_t A##_length(const N *vec); \
+    size_t A##_capacity(const N *vec); \
+    int A##_empty(const N *vec); \
     int A##_resize(N *vec, size_t cap); \
     int A##_shrink(N *vec); \
     /* single item operations */ \
@@ -136,11 +138,11 @@ typedef enum
     void A##_pop_front(N *vec, T *val); \
     void A##_pop_back(N *vec, T *val); \
     void A##_pop_at(N *vec, size_t index, T *val); \
-    VEC_ITEM(T, M) A##_get_front(N *vec); \
-    VEC_ITEM(T, M) A##_get_back(N *vec); \
-    VEC_ITEM(T, M) A##_get_at(N *vec, size_t index); \
+    VEC_ITEM(T, M) A##_get_front(const N *vec); \
+    VEC_ITEM(T, M) A##_get_back(const N *vec); \
+    VEC_ITEM(T, M) A##_get_at(const N *vec, size_t index); \
     /* slice operations */ \
-    int A##_extend_front(N *vec, N *v2, size_t n); \
+    /* TODO */ int A##_extend_front(N *vec, N *v2, size_t n); \
     /* TODO */ int A##_extend_back(N *vec, N *v2, size_t n); \
     /* TODO */ int A##_extend_at(N *vec, size_t index, N *v2, size_t n); \
     /* TODO */ int A##_paste_front(N *vec, N *v2, size_t n); \
@@ -156,14 +158,15 @@ typedef enum
     void A##_swap(N *vec, size_t i1, size_t i2); \
     void A##_reverse(N *vec); \
     /* TODO */ void A##_reverse_slice(N *vec, size_t from, size_t n); \
-    VEC_ITEM(T, M)*A##_iter_begin(N *vec); \
-    VEC_ITEM(T, M)*A##_iter_end(N *vec); \
+    VEC_ITEM(T, M)*A##_iter_begin(const N *vec); \
+    VEC_ITEM(T, M)*A##_iter_end(const N *vec); \
+    VEC_ITEM(T, M)*A##_iter_at(const N *vec, size_t index); \
     /* split implementation */ \
     void A##_free(N *vec); \
     void A##_zero(N *vec); \
-    size_t A##_reserved(N *vec); \
+    size_t A##_reserved(const N *vec); \
     int A##_reserve(N *vec, size_t cap); \
-    int A##_copy(N *dst, N *src); \
+    int A##_copy(N *dst, const N *src); \
 
 /*
  * int A##_cmp(N *a, N *b) -> compare vec
@@ -191,6 +194,7 @@ typedef enum
     VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F);            \
     VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M);     \
     VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M);       \
+    VEC_IMPLEMENT_COMMON_ITER_AT(N, A, T, F, M);        \
     VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F, M);      \
     VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F, M);       \
     VEC_IMPLEMENT_COMMON_POP_AT(N, A, T, F, M);         \
@@ -246,11 +250,11 @@ typedef enum
  * @return pointer to item (by reference) at index
  */
 #define VEC_IMPLEMENT_COMMON_STATIC_GET(N, A, T, F, M) \
-    static inline VEC_ITEM(T, M) *A##_static_get(N *vec, size_t index) \
+    static inline VEC_ITEM(T, M) *A##_static_get(const N *vec, size_t index) \
     { \
-        assert(vec); \
-        assert(index < vec->last); \
-        assert(index >= vec->first); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(index < vec->last); \
+        VEC_ASSERT_REAL(index >= vec->first); \
         return &vec->VEC_STRUCT_ITEMS[index]; \
     }
 
@@ -262,22 +266,26 @@ typedef enum
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_BACK(N, A, T, F) \
     static inline int A##_static_shrink_back(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t cap = vec->cap; \
         size_t last = vec->last; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
         while(required > last) required /= 2; \
         required *= 2; \
         if(required  < vec->cap) { \
-            if(F != 0) { \
-                for(size_t i = required; i < cap; i++) { \
-                    VEC_TYPE_FREE(F, &vec->VEC_STRUCT_ITEMS[i], T); \
+            if(required) { \
+                if(F != 0) { \
+                    for(size_t i = required; i < cap; i++) { \
+                        VEC_TYPE_FREE(F, &vec->VEC_STRUCT_ITEMS[i], T); \
+                    } \
                 } \
+                void *temp = vec_realloc(vec->VEC_STRUCT_ITEMS, sizeof(*vec->VEC_STRUCT_ITEMS) * required); \
+                if(!temp) return VEC_ERROR_REALLOC; \
+                vec->VEC_STRUCT_ITEMS = temp; \
+                vec->cap = required; \
+            } else { \
+                A##_free(vec); \
             } \
-            void *temp = vec_realloc(vec->VEC_STRUCT_ITEMS, sizeof(*vec->VEC_STRUCT_ITEMS) * required); \
-            if(!temp) return VEC_ERROR_REALLOC; \
-            vec->VEC_STRUCT_ITEMS = temp; \
-            vec->cap = required; \
         } \
         return VEC_ERROR_NONE; \
     }
@@ -290,7 +298,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_VAL_STATIC_SHRINK_FRONT(N, A, T, F) \
     static inline int A##_static_shrink_front(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t first = vec->first; \
         if(first) { \
             vec->first = 0; \
@@ -317,23 +325,28 @@ typedef enum
 #define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_BACK(N, A, T, F) \
     static inline int A##_static_shrink_back(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t cap = vec->cap; \
         size_t last = vec->last; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
         while(required > last) required /= 2; \
         required *= 2; \
         if(required < vec->cap) { \
-            for(size_t i = required; i < cap; i++) { \
-                if(F != 0) { \
-                    VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
+            if(required) { \
+                for(size_t i = required; i < cap; i++) { \
+                    if(F != 0) { \
+                        VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
+                    } \
+                    free(vec->VEC_STRUCT_ITEMS[i]); \
+                    /*memset(&vec->VEC_STRUCT_ITEMS[i], 0, sizeof(vec->VEC_STRUCT_ITEMS[i]));*/ \
                 } \
-                free(vec->VEC_STRUCT_ITEMS[i]); \
+                void *temp = vec_realloc(vec->VEC_STRUCT_ITEMS, sizeof(*vec->VEC_STRUCT_ITEMS) * required); \
+                if(!temp) return VEC_ERROR_REALLOC; \
+                vec->VEC_STRUCT_ITEMS = temp; \
+                vec->cap = required; \
+            } else { \
+                A##_free(vec); \
             } \
-            void *temp = vec_realloc(vec->VEC_STRUCT_ITEMS, sizeof(*vec->VEC_STRUCT_ITEMS) * required); \
-            if(!temp) return VEC_ERROR_REALLOC; \
-            vec->VEC_STRUCT_ITEMS = temp; \
-            vec->cap = required; \
         } \
         return VEC_ERROR_NONE; \
     }
@@ -346,7 +359,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_REF_STATIC_SHRINK_FRONT(N, A, T, F) \
     static inline int A##_static_shrink_front(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t first = vec->first; \
         if(first) { \
             vec->first = 0; \
@@ -383,7 +396,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_STATIC_ZERO(N, A, T, F) \
     static inline void A##_static_zero(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         vec_memset(vec, 0, sizeof(*vec)); \
     }
 
@@ -395,7 +408,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_CLEAR(N, A, T, F) \
     inline void A##_clear(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         vec->first = 0; \
         vec->last = 0; \
     }
@@ -406,9 +419,9 @@ typedef enum
  * @return length in items
  */
 #define VEC_IMPLEMENT_COMMON_LENGTH(N, A, T, F) \
-    inline size_t A##_length(N *vec) \
+    inline size_t A##_length(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         return vec->last - vec->first; \
     }
 
@@ -418,9 +431,9 @@ typedef enum
  * @return capacity in item spaces
  */
 #define VEC_IMPLEMENT_COMMON_CAPACITY(N, A, T, F) \
-    inline size_t A##_capacity(N *vec) \
+    inline size_t A##_capacity(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         return vec->cap; \
     }
 
@@ -430,9 +443,9 @@ typedef enum
  * @return boolean comparison: true if empty, false if not empty
  */
 #define VEC_IMPLEMENT_COMMON_EMPTY(N, A, T, F) \
-    inline int A##_empty(N *vec) \
+    inline int A##_empty(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         return (vec->first == vec->last); \
     }
 
@@ -445,7 +458,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_RESIZE(N, A, T, F) \
     inline int A##_resize(N *vec, size_t cap) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         int result = VEC_ERROR_NONE; \
         A##_static_shrink_front(vec); \
         result |= result ?: A##_reserve(vec, cap); \
@@ -462,7 +475,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_SHRINK(N, A, T, F) \
     inline int A##_shrink(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         int result = A##_static_shrink_front(vec); \
         result |= A##_static_shrink_back(vec); \
         return result; \
@@ -474,10 +487,10 @@ typedef enum
  * @return pointer to first item
  */
 #define VEC_IMPLEMENT_COMMON_ITER_BEGIN(N, A, T, F, M) \
-    inline VEC_ITEM(T, M)*A##_iter_begin(N *vec) \
+    inline VEC_ITEM(T, M)*A##_iter_begin(const N *vec) \
     { \
-        assert(vec); \
-        assert(vec->first <= vec->last); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(vec->first <= vec->last); \
         return vec->VEC_STRUCT_ITEMS + vec->first; \
     }
 
@@ -487,11 +500,24 @@ typedef enum
  * @return pointer to one past last item
  */
 #define VEC_IMPLEMENT_COMMON_ITER_END(N, A, T, F, M) \
-    inline VEC_ITEM(T, M)*A##_iter_end(N *vec) \
+    inline VEC_ITEM(T, M)*A##_iter_end(const N *vec) \
     { \
-        assert(vec); \
-        assert(vec->first <= vec->last); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(vec->first <= vec->last); \
         return vec->VEC_STRUCT_ITEMS + vec->last; \
+    }
+
+/**
+ * @brief A##_iter_at [COMMON] - get pointer to certain item
+ * @param vec - the vector
+ * @return pointer to one past last item
+ */
+#define VEC_IMPLEMENT_COMMON_ITER_AT(N, A, T, F, M) \
+    inline VEC_ITEM(T, M)*A##_iter_at(const N *vec, size_t index) \
+    { \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(vec->first + index <= vec->last); \
+        return vec->VEC_STRUCT_ITEMS + vec->first + index; \
     }
 
 /**
@@ -503,8 +529,8 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_POP_FRONT(N, A, T, F, M) \
     inline void A##_pop_front(N *vec, T *val) \
     { \
-        assert(vec); \
-        assert(vec->last > vec->first); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(vec->last > vec->first); \
         if(val) { \
             size_t first = vec->first; \
             T *item = VEC_REF(M) *A##_static_get(vec, first); \
@@ -522,8 +548,8 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_POP_BACK(N, A, T, F, M) \
     inline void A##_pop_back(N *vec, T *val) \
     { \
-        assert(vec); \
-        assert(vec->last > vec->first); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(vec->last > vec->first); \
         if(val) { \
             size_t back = vec->last - 1; \
             T *item = VEC_REF(M) *A##_static_get(vec, back); \
@@ -539,9 +565,9 @@ typedef enum
  * @return item (by value) at index
  */
 #define VEC_IMPLEMENT_COMMON_GET_AT(N, A, T, F, M) \
-    inline VEC_ITEM(T, M) A##_get_at(N *vec, size_t index) \
+    inline VEC_ITEM(T, M) A##_get_at(const N *vec, size_t index) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         return *A##_static_get(vec, index + vec->first); \
     }
 
@@ -551,9 +577,9 @@ typedef enum
  * @return item (by value) at front
  */
 #define VEC_IMPLEMENT_COMMON_GET_FRONT(N, A, T, F, M) \
-    inline VEC_ITEM(T, M) A##_get_front(N *vec) \
+    inline VEC_ITEM(T, M) A##_get_front(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         return *A##_static_get(vec, vec->first); \
     }
 
@@ -563,9 +589,9 @@ typedef enum
  * @return item (by value) at end
  */
 #define VEC_IMPLEMENT_COMMON_GET_BACK(N, A, T, F, M) \
-    inline VEC_ITEM(T, M) A##_get_back(N *vec) \
+    inline VEC_ITEM(T, M) A##_get_back(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         return *A##_static_get(vec, vec->last - 1); \
     }
 
@@ -579,7 +605,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_SET_AT(N, A, T, F, M) \
     inline void A##_set_at(N *vec, size_t index, VEC_ITEM(T, M) val) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         VEC_ASSERT(val, M); \
         T *item = VEC_REF(M) *A##_static_get(vec, index + vec->first); \
         if(F != 0) VEC_TYPE_FREE(F, item, T); \
@@ -596,7 +622,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_POP_AT(N, A, T, F, M) \
     inline void A##_pop_at(N *vec, size_t index, T *val) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         VEC_ASSERT(val, M); \
         VEC_ITEM(T, M) *item = A##_static_get(vec, index + vec->first); \
         if(val) { \
@@ -617,7 +643,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_PUSH_AT(N, A, T, F, M) \
     inline int A##_push_at(N *vec, size_t index, VEC_ITEM(T, M) val) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         VEC_ASSERT(val, M); \
         int result = A##_reserve(vec, vec->last + 1); \
         if(result) return result; \
@@ -637,7 +663,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_PUSH_FRONT(N, A, T, F, M) \
     inline int A##_push_front(N *vec, VEC_ITEM(T, M) val) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         VEC_ASSERT(val, M); \
         int result = A##_reserve(vec, vec->last + 1); \
         if(result) return result; \
@@ -657,12 +683,13 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_PUSH_BACK(N, A, T, F, M) \
     inline int A##_push_back(N *vec, VEC_ITEM(T, M) val) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         VEC_ASSERT(val, M); \
         int result = A##_reserve(vec, vec->last + 1); \
         if(result) return result; \
         size_t back = vec->last++; \
         T *item = VEC_REF(M) *A##_static_get(vec, back); \
+        /* TODO add a new parameter: clearing function! so we don't free this! => we'll still overwrite 2 linew below... */ \
         if(F != 0) VEC_TYPE_FREE(F, item, T); /* required (?) in case we pop back (but don't free (?)) and then push back again */ \
         vec_memcpy(item, VEC_REF(M) val, sizeof(T)); \
         return VEC_ERROR_NONE; \
@@ -678,7 +705,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_SWAP(N, A, T, F, M) \
     inline void A##_swap(N *vec, size_t i1, size_t i2) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         VEC_ITEM(T, M) *v1 = A##_static_get(vec, i1 + vec->first); \
         VEC_ITEM(T, M) *v2 = A##_static_get(vec, i2 + vec->first); \
         VEC_ITEM(T, M) tmp; \
@@ -695,7 +722,7 @@ typedef enum
 #define VEC_IMPLEMENT_COMMON_REVERSE(N, A, T, F) \
     inline void A##_reverse(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t len = A##_length(vec); \
         size_t len2 = len / 2; \
         for(size_t i = 0; i < len2; i++) { \
@@ -713,7 +740,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_VAL_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         if(F != 0) { \
             for(size_t i = 0; i < vec->cap; i++) { \
                 VEC_TYPE_FREE(F, &vec->VEC_STRUCT_ITEMS[i], T); \
@@ -731,7 +758,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_VAL_ZERO(N, A, T, F) \
     inline void A##_zero(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         vec_memset(vec, 0, sizeof(*vec)); \
     }
 
@@ -741,9 +768,9 @@ typedef enum
  * @return allocated size in bytes
  */
 #define VEC_IMPLEMENT_BY_VAL_RESERVED(N, A, T, F) \
-    inline size_t A##_reserved(N *vec) \
+    inline size_t A##_reserved(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t result = 0; \
         result += (sizeof(*vec->VEC_STRUCT_ITEMS) * vec->cap); \
         return result; \
@@ -758,7 +785,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_VAL_RESERVE(N, A, T, F) \
     inline int A##_reserve(N *vec, size_t cap) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         cap += VEC_KEEP_ZERO_END; \
         size_t cap_is = vec->cap; \
         if(cap > cap_is) { \
@@ -782,16 +809,18 @@ typedef enum
  * @return zero if succes, non-zero if failure
  */
 #define VEC_IMPLEMENT_BY_VAL_COPY(N, A, T, F) \
-    inline int A##_copy(N *dst, N *src) \
+    inline int A##_copy(N *dst, const N *src) \
     { \
-        assert(dst); \
-        assert(src); \
-        assert(dst != src); \
+        VEC_ASSERT_REAL(dst); \
+        VEC_ASSERT_REAL(src); \
+        VEC_ASSERT_REAL(dst != src); \
         A##_clear(dst); \
-        int result = A##_reserve(dst, A##_length(src)); \
-        if(result) return result; \
-        vec_memcpy(dst->VEC_STRUCT_ITEMS, src->VEC_STRUCT_ITEMS, sizeof(*dst->VEC_STRUCT_ITEMS) * A##_length(src)); \
-        dst->last = A##_length(src); \
+        if(A##_length(src)) { \
+            int result = A##_reserve(dst, A##_length(src)); \
+            if(result) return result; \
+            vec_memcpy(dst->VEC_STRUCT_ITEMS, src->VEC_STRUCT_ITEMS, sizeof(*dst->VEC_STRUCT_ITEMS) * A##_length(src)); \
+            dst->last = A##_length(src); \
+        } \
         return VEC_ERROR_NONE; \
     }
 
@@ -806,7 +835,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_REF_FREE(N, A, T, F) \
     inline void A##_free(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         for(size_t i = 0; i < vec->cap; i++) { \
             if(F != 0) { \
                 VEC_TYPE_FREE(F, vec->VEC_STRUCT_ITEMS[i], T); \
@@ -825,7 +854,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_REF_ZERO(N, A, T, F) \
     inline void A##_zero(N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         vec_memset(vec, 0, sizeof(*vec)); \
         /*for(size_t i = 0; i < vec->cap; i++) { \
             vec_memset(&vec->VEC_STRUCT_ITEMS[i], 0, sizeof(*vec->VEC_STRUCT_ITEMS)); \
@@ -838,9 +867,9 @@ typedef enum
  * @return allocated size in bytes
  */
 #define VEC_IMPLEMENT_BY_REF_RESERVED(N, A, T, F) \
-    inline size_t A##_reserved(N *vec) \
+    inline size_t A##_reserved(const N *vec) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         size_t result = 0; \
         result += (sizeof(**vec->VEC_STRUCT_ITEMS) * vec->cap); \
         result += (sizeof(*vec->VEC_STRUCT_ITEMS) * vec->cap); \
@@ -856,7 +885,7 @@ typedef enum
 #define VEC_IMPLEMENT_BY_REF_RESERVE(N, A, T, F) \
     inline int A##_reserve(N *vec, size_t cap) \
     { \
-        assert(vec); \
+        VEC_ASSERT_REAL(vec); \
         cap += VEC_KEEP_ZERO_END; \
         size_t cap_is = vec->cap; \
         size_t required = vec->cap ? vec->cap : VEC_DEFAULT_SIZE;\
@@ -883,24 +912,27 @@ typedef enum
  * @return zero if succes, non-zero if failure
  */
 #define VEC_IMPLEMENT_BY_REF_COPY(N, A, T, F) \
-    inline int A##_copy(N *dst, N *src) \
+    inline int A##_copy(N *dst, const N *src) \
     { \
-        assert(dst); \
-        assert(src); \
-        assert(dst != src); \
+        VEC_ASSERT_REAL(dst); \
+        VEC_ASSERT_REAL(src); \
+        VEC_ASSERT_REAL(dst != src); \
         A##_clear(dst); \
-        int result = A##_reserve(dst, A##_length(src)); \
-        if(result) return result; \
-        for(size_t i = 0; i < A##_length(src); i++) { \
-            result |= result ?: A##_push_back(dst, A##_get_at(src, i)); \
+        int result = 0; \
+        if(A##_length(src)) { \
+            result = A##_reserve(dst, A##_length(src)); \
+            if(result) return result; \
+            for(size_t i = 0; i < A##_length(src); i++) { \
+                result |= result ?: A##_push_back(dst, A##_get_at(src, i)); \
+            } \
         } \
         return result; \
     }
 
 #define VEC_IMPLEMENT_COMMON_EXTEND_FRONT(N, A, T, F, M) \
     int A##_extend_front(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(v2) ? n : A##_length(v2); \
         size_t require = vec->last + A##_length(v2); \
         int result = A##_reserve(vec, require); \
@@ -918,8 +950,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_EXTEND_BACK(N, A, T, F, M) \
     int A##_extend_back(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(v2) ? n : A##_length(v2); \
         size_t require = vec->last + A##_length(v2); \
         size_t from = require < A##_length(vec) ? A##_length(vec) - require : 0; \
@@ -935,8 +967,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_EXTEND_AT(N, A, T, F, M) \
     int A##_extend_at(N *vec, size_t index, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(v2) ? n : A##_length(v2); \
         size_t require = vec->last + A##_length(v2); \
         int result = A##_reserve(vec, require); \
@@ -954,8 +986,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_CUT_FRONT(N, A, T, F, M) \
     int A##_cut_front(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(vec) ? n : A##_length(vec); \
         for(size_t i = 0; i < until; i++) { \
             VEC_ITEM(T, M) *value = A##_static_get(vec, vec->first + i); \
@@ -968,8 +1000,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_CUT_BACK(N, A, T, F, M) \
     int A##_cut_back(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t from = n < A##_length(vec) ? A##_length(vec) - n : 0; \
         size_t until = n < A##_length(vec) ? n : A##_length(vec); \
         for(size_t i = 0; i < until; i++) { \
@@ -983,11 +1015,17 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_CUT_AT(N, A, T, F, M) \
     int A##_cut_at(N *vec, size_t from, size_t n, N *v2) { \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
+        VEC_ASSERT_REAL(0 && "todo: implement"); \
+        (void) from; \
+        (void) n; \
+        return 0; \
     }
 
 #if 0
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(vec) ? n : A##_length(vec); \
         VEC_ITEM(T, M) *item = A##_static_get(vec, from + vec->first); \
         for(size_t i = 0; i < until; i++) { \
@@ -1012,11 +1050,10 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_PASTE_FRONT(N, A, T, F, M) \
     int A##_paste_front(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(v2) ? n : A##_length(v2); \
         size_t require = until < A##_length(vec) ? until : A##_length(vec); \
-        size_t from = A##_length(vec); \
         int result = A##_reserve(vec, require); \
         if(result) return result; \
         for(size_t i = 0; i < until; i++) { \
@@ -1028,8 +1065,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_PASTE_BACK(N, A, T, F, M) \
     int A##_paste_back(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(v2) ? n : A##_length(v2); \
         size_t require = until < A##_length(vec) ? until : A##_length(vec); \
         size_t from = until < A##_length(vec) ? A##_length(vec) - until : 0; \
@@ -1044,14 +1081,18 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_PASTE_AT(N, A, T, F, M) \
     int A##_paste_at(N *vec, size_t index, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
+        VEC_ASSERT_REAL(0 && "todo: implement"); \
+        (void) n; \
+        (void) index; \
+        return 0; \
     }
 
 #define VEC_IMPLEMENT_COMMON_CAT_FRONT(N, A, T, F, M) \
     int A##_cat_front(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(vec) ? n : A##_length(vec); \
         for(size_t i = 0; i < until; i++) { \
             VEC_ITEM(T, M) *item = A##_static_get(vec, vec->first + i); \
@@ -1063,8 +1104,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_CAT_BACK(N, A, T, F, M) \
     int A##_cat_back(N *vec, N *v2, size_t n) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t from = n < A##_length(vec) ? A##_length(vec) - n : 0; \
         size_t until = n < A##_length(vec) ? n : A##_length(vec); \
         for(size_t i = 0; i < until; i++) { \
@@ -1077,8 +1118,8 @@ typedef enum
 
 #define VEC_IMPLEMENT_COMMON_CAT_AT(N, A, T, F, M) \
     int A##_cat_at(N *vec, size_t from, size_t n, N *v2) { \
-        assert(vec); \
-        assert(v2); \
+        VEC_ASSERT_REAL(vec); \
+        VEC_ASSERT_REAL(v2); \
         size_t until = n < A##_length(vec) ? n : A##_length(vec); \
         for(size_t i = 0; i < until; i++) { \
             VEC_ITEM(T, M) *item = A##_static_get(vec, vec->first + i + from); \
